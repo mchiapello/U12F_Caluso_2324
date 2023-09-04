@@ -1,0 +1,16 @@
+---
+title: "Commenti tecnici-tattici"
+listing:
+  contents: commenteta
+  sort: "date desc"
+  type: table
+  categories: true
+  sort-ui: false
+  filter-ui: false
+  fields: [date, title]
+  field-display-names:
+    title: "Commento"
+    date: "Data"
+page-layout: full
+title-block-banner: true
+---

@@ -1,0 +1,23 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "WebsiteTEST",
+    "section": "",
+    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "PGS Foglizzese U14 Femminile",
+    "section": "",
+    "text": "No matching items"
+  },
+  {
+    "objectID": "post1.html",
+    "href": "post1.html",
+    "title": "test1",
+    "section": "",
+    "text": "test1\nL’allenamento di oggi 22/02/2023 si è svolto al Polifunzionale.\nOggi era l’allenamento 1, ed erano assenti:\ny <- params$assenti\ncat(paste0(\"- \", y, \";\\n\"))\n\nPascarella;\nSuriani;\nCiravolo;\n\nPlease contact us at info@example.com.\n\nx <- params$assenti\nx\n\n[1] \"Pascarella\" \"Suriani\"    \"Ciravolo\"  \n\nclass(x)\n\n[1] \"character\""
+  }
+]

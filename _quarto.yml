@@ -1,0 +1,34 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "WebsiteTEST"
+  favicon: images/foxvolleyball3.png
+  navbar:
+    left:
+      - href: allenamenti.qmd
+        text: Allenamenti
+      - href: partite.qmd
+        text: Partite
+      - href: ct.qmd
+        text: Commenti tecnico-tattici
+    right: 
+      - icon: youtube
+        href: https://www.youtube.com/playlist?list=PLuLJwY97FamexM2F6711BmqySUYCotgZ0
+      - text: Calendari
+        menu: 
+          - text: "Prima fase"
+            href: https://fipavonline.it/main/gare_girone/40670/1
+      - text: Classifica
+        menu: 
+          - text: "Prima fase"
+            href: https://fipavonline.it/main/classifica/40670
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+

@@ -1,0 +1,18 @@
+---
+title: "BCV Caluso U12F - 2023/2024"
+---
+
+::: {style="text-align: center; font-size: 30px;"}
+Questo è il sito di riferimanto dell'U12F del BCV Caluso.
+:::
+
+![](images/image.jpg)
+
+::: {style="text-align: center; font-size: 30px;"}
+Allenamenti
+:::
+
+| GIORNO  | LUOGO    | ORA   |
+|---------|----------|-------|
+| Lunedì  | Palestra dell'Ubertini | 18:30-20:30 |
+| Giovedì | Palestra di Arè | 18-20 |
