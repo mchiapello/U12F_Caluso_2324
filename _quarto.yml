@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "WebsiteTEST"
+  title: "U12F BVC Caluso"
   favicon: images/foxvolleyball3.png
   navbar:
     left:
