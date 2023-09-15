@@ -1,22 +1,22 @@
 # Define variavbles
 ### Folder
-d <- "08/28/2023"
+d <- "09/11/2023"
 date <- lubridate::mdy(d)
-n <- 5
+n <- 2
 ### File
 categories <- c("U14F", "2023-2024", "Pre-season")
 palestra <- c("Elementari")
-assenti <- c("Randazzo", "Boni")
+assenti <- c()
 impegno <- 0.9
 obiettivo <- 0.7
-allenatore <- 0.6
+allenatore <- 0.8
 miglioramenti <- 0.7
 voto <- 0.9
-obiettivi <- "Difesa"
+obiettivi <- "Battuta, Ricezione"
 
 # Prepare the folder
 dd <- lubridate::wday(date, label = TRUE)
-if(dd == "Tue"){
+if(dd == "Mon"){
   dd <- "M"
 } else {
   dd <- "G"
@@ -34,8 +34,8 @@ cat(paste0("---\n",
            "params:\n",
            "  palestra: '", palestra, "'\n",
            "  date: '", str_replace(as.character(date), 
-                                   "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", 
-                                   "\\3/\\2/\\1"), "'\n",
+                                    "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", 
+                                    "\\3/\\2/\\1"), "'\n",
            "  allenamento: '", n, "'\n",
            "  assenti: ['", paste0(assenti, collapse = "', '"), "']\n",
            "  impegno: ", impegno, "\n",
