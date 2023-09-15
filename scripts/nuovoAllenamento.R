@@ -13,6 +13,7 @@ allenatore <- 0.8
 miglioramenti <- 0.7
 voto <- 0.9
 obiettivi <- "Battuta, Ricezione"
+url <- NA
 
 # Prepare the folder
 dd <- lubridate::wday(date, label = TRUE)
@@ -43,6 +44,7 @@ cat(paste0("---\n",
            "  allenatore: ", allenatore, "\n",
            "  miglioramenti: ", miglioramenti, "\n",
            "  voto: ", voto, "\n",
+           "  url: ", url, "\n",
            "execute:\n",
            "  echo: false\n",
            "  warning: false\n",

@@ -161,7 +161,16 @@ x |>
 
 ## Video dell'allenamento {{< fa video size=normalsize >}}
 
-{{< video https://www.youtube.com/embed/09pHpj20cQo >}}
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+if (!is.na(params$url)){
+  paste0("{{< video ", params$url," >}}")
+}
+
+```
 
 ```{r}
 #| echo: false
