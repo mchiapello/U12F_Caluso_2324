@@ -73,9 +73,7 @@ if(!lubridate::dmy(params$date) %in% pres$date){
     # system("git restore data/presenze_old.csv")
 }
 
-x <- readr::read_csv(paste0(here::here(), "/data/presenze.csv"), show_col_types = FALSE)
-
-x |>
+pres2 |>
     dplyr::filter(date %in% lubridate::dmy(params$date))  |>
     dplyr::mutate(date = format(date, "%d-%m"),
            assenti = ifelse(assenti == 1, "X", ""))  |>
@@ -93,44 +91,44 @@ x |>
 #| echo: false
 #| message: false
 #| warning: false
-####################### da modificare
-# class <- readr::read_tsv(paste0(here::here(), "/data/003_dati/classificaRaw.tsv"), show_col_types = FALSE)
-# players <- readr::read_table(paste0(here::here(), "/data/003_dati/players.tsv"), show_col_types = FALSE)
-# 
-# if(!lubridate::ymd(quarto::quarto_inspect(fs::dir_ls(".", regex = "qmd$"))$formats$html$metadata$date) %in% class$date){
-#     class <- classifica(players,
-#             date = str_remove_all(quarto::quarto_inspect(fs::dir_ls(".", regex = "qmd$"))$formats$html$metadata$date,
-#                           "-"),
-#             vincitori = c(40,30,27,9,28))
-# 
-#     fs::file_copy(paste0(here::here(), "/data/003_dati/classificaRaw.tsv"),
-#                   paste0(here::here(), "/data/003_dati/classificaRaw_old.tsv"),
-#                   overwrite = TRUE)
-#     write_tsv(class, paste0(here::here(), "/data/003_dati/classificaRaw.tsv"))
-#     
-#     # # If a mistake is made before commit
-#     # system("git restore data/003_dati/classificaRaw.tsv")
-#     # system("git restore data/003_dati/classificaRaw_old.tsv")
-# }
-# 
-# 
-# 
-# x2 <- readr::read_tsv(paste0(here::here(), "/data/classificaRaw.tsv"), show_col_types = FALSE)
-# 
-# 
-# x2 |> 
-#     dplyr::left_join(x) |> 
-#     dplyr::mutate(mese = lubridate::month(params$date)) |> 
-#     dplyr::filter(mese == lubridate::month(params$date)) |> 
-#     dplyr::mutate(Punteggio = dplyr::case_when(vincitore == 1 & assenti == 0 ~ 3,
-#                                  vincitore == 0 & assenti == 0 ~ 1,
-#                                  TRUE ~ 0)) |> 
-#     dplyr::group_by(cognome, nome) |> 
-#     dplyr::summarise(Classifica = sum(Punteggio)) |> 
-#     dplyr::ungroup() |> 
-#     dplyr::arrange(desc(Classifica), cognome) |> 
-#     gt::gt() |> 
-#     gtExtras::gt_theme_538()
+###################### da modificare
+class <- readr::read_tsv(paste0(here::here(), "/data/classificaRaw.tsv"), show_col_types = FALSE)
+players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE)
+
+if(!lubridate::dmy(params$date) %in% pres2$date){
+  class <- class %>% 
+        bind_rows(pres2 |> 
+                    filter(date == lubridate::dmy(params$date)) |>
+                    mutate(vincitori = ifelse(numero %in% params$vincitori, 1, 0)))
+
+    fs::file_copy(paste0(here::here(), "/data/003_dati/classificaRaw.tsv"),
+                  paste0(here::here(), "/data/003_dati/classificaRaw_old.tsv"),
+                  overwrite = TRUE)
+    write_tsv(class, paste0(here::here(), "/data/003_dati/classificaRaw.tsv"))
+
+    # # If a mistake is made before commit
+    # system("git restore data/003_dati/classificaRaw.tsv")
+    # system("git restore data/003_dati/classificaRaw_old.tsv")
+}
+
+
+
+x2 <- readr::read_tsv(paste0(here::here(), "/data/classificaRaw.tsv"), show_col_types = FALSE)
+
+
+x2 |>
+    dplyr::left_join(x) |>
+    dplyr::mutate(mese = lubridate::month(params$date)) |>
+    dplyr::filter(mese == lubridate::month(params$date)) |>
+    dplyr::mutate(Punteggio = dplyr::case_when(vincitore == 1 & assenti == 0 ~ 3,
+                                 vincitore == 0 & assenti == 0 ~ 1,
+                                 TRUE ~ 0)) |>
+    dplyr::group_by(cognome, nome) |>
+    dplyr::summarise(Classifica = sum(Punteggio)) |>
+    dplyr::ungroup() |>
+    dplyr::arrange(desc(Classifica), cognome) |>
+    gt::gt() |>
+    gtExtras::gt_theme_538()
 
 ```
 

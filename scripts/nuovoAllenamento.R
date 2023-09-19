@@ -7,6 +7,7 @@ n <- 2
 categories <- c("U14F", "2023-2024", "Pre-season")
 palestra <- c("Elementari")
 assenti <- c()
+vincitori <- c()
 impegno <- 0.9
 obiettivo <- 0.7
 allenatore <- 0.8
