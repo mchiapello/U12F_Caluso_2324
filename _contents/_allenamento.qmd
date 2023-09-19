@@ -157,7 +157,7 @@ x2 %>%
 #| warning: false
 
 if (!is.na(params$url)){
-  paste0("{{< video ", params$url," >}}")
+  cat(paste0("{{< video ", params$url," >}}"))
 } else {
   cat(paste0("Nessun video per questo allenamento."))
 }

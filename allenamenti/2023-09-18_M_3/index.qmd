@@ -12,7 +12,7 @@ params:
   allenatore: 0.8
   miglioramenti: 0.7
   voto: 0.9
-  url: NA
+  url: https://youtu.be/1uPBZl9GG2U
 execute:
   echo: false
   warning: false

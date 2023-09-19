@@ -14,7 +14,7 @@ allenatore <- 0.8
 miglioramenti <- 0.7
 voto <- 0.9
 obiettivi <- "Battuta, Ricezione"
-url <- NA
+url <- c("https://youtu.be/1uPBZl9GG2U")
 
 # Prepare the folder
 dd <- lubridate::wday(date, label = TRUE)
