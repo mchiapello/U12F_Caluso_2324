@@ -1,0 +1,23 @@
+---
+date: 09/11/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
+params:
+  palestra: 'Ubertini'
+  date: '11/09/2023'
+  allenamento: '1'
+  assenti: ['Celeste', 'Deluca']
+  vincitori: ['NA']
+  impegno: 0.8
+  obiettivo: 0.7
+  allenatore: 0.8
+  miglioramenti: 0.7
+  voto: 0.9
+  url: NA
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Battuta, Ricezione
+{{< include ../../_contents/_allenamento.qmd >}}

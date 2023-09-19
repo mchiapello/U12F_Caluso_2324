@@ -72,7 +72,7 @@ if(!lubridate::dmy(params$date) %in% pres$date){
     # system("git restore data/presenze.csv")
     # system("git restore data/presenze_old.csv")
 }
-
+pres2 <- readr::read_csv(paste0(here::here(), "/data/presenze.csv"), show_col_types = FALSE)
 pres2 |>
     dplyr::filter(date %in% lubridate::dmy(params$date))  |>
     dplyr::mutate(date = format(date, "%d-%m"),
@@ -91,27 +91,27 @@ pres2 |>
 #| echo: false
 #| message: false
 #| warning: false
-###################### da modificare
-class <- readr::read_tsv(paste0(here::here(), "/data/classificaRaw.tsv"), show_col_types = FALSE)
+
+class <- readr::read_csv(paste0(here::here(), "/data/classificaRaw.csv"), show_col_types = FALSE)
 players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE)
 
-if(!lubridate::dmy(params$date) %in% pres2$date){
+if(!lubridate::dmy(params$date) %in% pres$date){
   class <- class %>% 
         bind_rows(pres2 |> 
                     filter(date == lubridate::dmy(params$date)) |>
-                    mutate(vincitori = ifelse(numero %in% params$vincitori, 1, 0)))
+                    mutate(vincitori = ifelse(numero %in% as.numeric(params$vincitori), 1, 0)))
 
-    fs::file_copy(paste0(here::here(), "/data/classificaRaw.tsv"),
-                  paste0(here::here(), "/data/classificaRaw_old.tsv"),
+    fs::file_copy(paste0(here::here(), "/data/classificaRaw.csv"),
+                  paste0(here::here(), "/data/classificaRaw_old.csv"),
                   overwrite = TRUE)
-    write_tsv(class, paste0(here::here(), "/data/classificaRaw.tsv"))
+    write_csv(class, paste0(here::here(), "/data/classificaRaw.csv"))
 
     # # If a mistake is made before commit
-    # system("git restore data/003_dati/classificaRaw.tsv")
-    # system("git restore data/003_dati/classificaRaw_old.tsv")
+    # system("git restore data/003_dati/classificaRaw.csv")
+    # system("git restore data/003_dati/classificaRaw_old.csv")
 }
 
-x2 <- readr::read_tsv(paste0(here::here(), "/data/classificaRaw.tsv"), show_col_types = FALSE)
+x2 <- readr::read_csv(paste0(here::here(), "/data/classificaRaw.csv"), show_col_types = FALSE)
 
 
 x2 |>

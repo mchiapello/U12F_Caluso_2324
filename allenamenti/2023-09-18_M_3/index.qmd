@@ -1,12 +1,13 @@
 ---
-date: 09/11/2023
-categories: ['U14F', '2023-2024', 'Pre-season']
+date: 09/18/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
 params:
-  palestra: 'Elementari'
-  date: '11/09/2023'
-  allenamento: '2'
-  assenti: ['']
-  impegno: 0.9
+  palestra: 'Ubertini'
+  date: '18/09/2023'
+  allenamento: '3'
+  assenti: ['Gillone', 'Mauro']
+  vincitori: ['2', '5', '8', '17', '10', '14']
+  impegno: 0.8
   obiettivo: 0.7
   allenatore: 0.8
   miglioramenti: 0.7
