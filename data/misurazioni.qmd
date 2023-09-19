@@ -1,0 +1,47 @@
+---
+title: "Misurazioni"
+author: "Marco Chiapello"
+format: 
+  html:
+      number-sections: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| include: false
+
+library(tidyverse)
+library(here)
+library(fs)
+library(gt)
+library(gtExtras)
+```
+
+
+```{r}
+x <- read_csv(paste0(here::here(), "/data/001_misurazioni/20220906.csv")) |> 
+    janitor::clean_names() |> 
+    mutate(data = lubridate::dmy(data)) |> 
+    filter(data == max(data)) |> 
+    select(-number, -nascita, - peso) 
+
+x2 <- x |> 
+    mutate(altezza = NA,
+           reach = NA,
+           rincorsa = NA,
+           muro = NA,
+           yo_yo_test = NA,
+           data = lubridate::ymd("20230321"))
+
+x |> 
+    bind_rows(x2) |> 
+    arrange(cognome) |> 
+    filter(!cognome %in% c("Ciravolo", "Pascarella", "Ravazzi")) |> 
+    select(cognome, nome, altezza, reach, muro, rincorsa, yo_yo_test, data) |> 
+    write_csv(paste0(here::here(), "/data/001_misurazioni/masterMarzo.csv"))
+
+```
+
