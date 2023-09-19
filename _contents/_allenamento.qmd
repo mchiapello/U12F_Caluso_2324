@@ -101,27 +101,24 @@ if(!lubridate::dmy(params$date) %in% pres2$date){
                     filter(date == lubridate::dmy(params$date)) |>
                     mutate(vincitori = ifelse(numero %in% params$vincitori, 1, 0)))
 
-    fs::file_copy(paste0(here::here(), "/data/003_dati/classificaRaw.tsv"),
-                  paste0(here::here(), "/data/003_dati/classificaRaw_old.tsv"),
+    fs::file_copy(paste0(here::here(), "/data/classificaRaw.tsv"),
+                  paste0(here::here(), "/data/classificaRaw_old.tsv"),
                   overwrite = TRUE)
-    write_tsv(class, paste0(here::here(), "/data/003_dati/classificaRaw.tsv"))
+    write_tsv(class, paste0(here::here(), "/data/classificaRaw.tsv"))
 
     # # If a mistake is made before commit
     # system("git restore data/003_dati/classificaRaw.tsv")
     # system("git restore data/003_dati/classificaRaw_old.tsv")
 }
 
-
-
 x2 <- readr::read_tsv(paste0(here::here(), "/data/classificaRaw.tsv"), show_col_types = FALSE)
 
 
 x2 |>
-    dplyr::left_join(x) |>
     dplyr::mutate(mese = lubridate::month(params$date)) |>
     dplyr::filter(mese == lubridate::month(params$date)) |>
-    dplyr::mutate(Punteggio = dplyr::case_when(vincitore == 1 & assenti == 0 ~ 3,
-                                 vincitore == 0 & assenti == 0 ~ 1,
+    dplyr::mutate(Punteggio = dplyr::case_when(vincitori == 1 & assenti == 0 ~ 3,
+                                 vincitori == 0 & assenti == 0 ~ 1,
                                  TRUE ~ 0)) |>
     dplyr::group_by(cognome, nome) |>
     dplyr::summarise(Classifica = sum(Punteggio)) |>
@@ -139,21 +136,16 @@ x2 |>
 #| message: false
 #| warning: false
 
-# x2 <- read_tsv(paste0(here::here(), "/data/003_dati/classificaRaw.tsv"))
-# 
-# 
-# x2 %>%
-#     select(-Numero) %>% 
-#     left_join(x) %>% 
-#     mutate(Punteggio = case_when(vincitori == 1 & assenti == 0 ~ 3,
-#                                  vincitori == 0 & assenti == 0 ~ 1,
-#                                  TRUE ~ 0)) %>% 
-#     group_by(Cognome, Nome) %>% 
-#     summarise(Classifica = sum(Punteggio)) %>% 
-#     ungroup %>% 
-#     arrange(desc(Classifica), Cognome) %>% 
-#     gt::gt() %>% 
-#     gtExtras::gt_theme_538()
+x2 %>%
+    mutate(Punteggio = case_when(vincitori == 1 & assenti == 0 ~ 3,
+                                 vincitori == 0 & assenti == 0 ~ 1,
+                                 TRUE ~ 0)) %>%
+    group_by(cognome, nome) %>%
+    summarise(Classifica = sum(Punteggio)) %>%
+    ungroup %>%
+    arrange(desc(Classifica), cognome) %>%
+    gt::gt() %>%
+    gtExtras::gt_theme_538()
 
 ```
 
