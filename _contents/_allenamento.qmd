@@ -80,8 +80,14 @@ pres2 |>
     dplyr::select(-date, -id, -nascita, -numero) |>
     gt::gt()  |>
     gtExtras::gt_theme_538()
+
+pp <- paste0("Erano presenti ", nrow(pres2 |> 
+                                       filter(date %in% lubridate::dmy(params$date),
+                                              assenti == "0")),
+             " atlete su ", nrow(players))
 ```
 
+`r pp`
 
 ## Classifica Bagnerone {{< fa ranking-star size=normalsize >}}
 
