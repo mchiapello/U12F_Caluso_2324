@@ -1,6 +1,6 @@
 ---
 date: 09/18/2023
-categories: ['U12F', '2023-2024', 'Pre-season']
+categories: ['U12F', '2023-2024', 'Pre-season', 'misurazioni']
 params:
   palestra: 'Ubertini'
   date: '18/09/2023'
@@ -12,7 +12,7 @@ params:
   allenatore: 0.8
   miglioramenti: 0.7
   voto: 0.9
-  url: https://youtu.be/1uPBZl9GG2U
+  url: "https://youtu.be/1uPBZl9GG2U"
 execute:
   echo: false
   warning: false
@@ -21,3 +21,5 @@ execute:
 
 ## Obiettivi: Battuta, Ricezione
 {{< include ../../_contents/_allenamento.qmd >}}
+
+{{< include ../../_contents/_misurazioni.qmd >}}

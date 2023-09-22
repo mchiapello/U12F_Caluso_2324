@@ -157,12 +157,14 @@ x2 %>%
 #| warning: false
 
 if (!is.na(params$url)){
-  cat(paste0("{{< video ", params$url," >}}"))
+  video <- paste0("{{< video ", params$url," >}}")
 } else {
-  cat(paste0("Nessun video per questo allenamento."))
+  video <- paste0("Nessun video per questo allenamento.")
 }
 
 ```
+
+`r video`
 
 ```{r}
 #| echo: false

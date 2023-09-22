@@ -1,0 +1,42 @@
+---
+title: "Misurazioni Settembre"
+author: "Marco Chiapello"
+date: "2023-09-18"
+categories: ["U12F", "2023-2024", "BCV Caluso", "Misurazioni"]
+execute: 
+  echo: false
+  warning: false
+  message: false
+---
+
+
+```{r}
+library(tidyverse)
+library(gt)
+library(gtExtras)
+# Create data
+x <- read_csv(paste0(here::here(), "/data/misurazioni.csv")) 
+
+x %>% 
+    drop_na() |> 
+  mutate(atleta = str_replace(atleta, "-", " ")) |> 
+  arrange(desc(Altezza)) |> 
+    gt()  |>  
+    # HIGHLIGHT massima altezza 
+     tab_style(style = cell_fill(color = "#04BF8A"),
+            locations = cells_body(columns = "Rincorsa", 
+                                   rows = (Rincorsa > 215)))  |>  
+    tab_style(style = cell_fill(color = "#03A64A"),
+            locations = cells_body(columns = "Muro", 
+                                   rows = (Muro > 215))) |> 
+  tab_style(style = cell_fill(color = "#BDE038"),
+            locations = cells_body(columns = "saltoFerma", 
+                                   rows = (saltoFerma == max(saltoFerma))))  |>  
+    tab_style(style = cell_fill(color = "#DAFDBA"),
+            locations = cells_body(columns = "saltoMovimento", 
+                                   rows = (saltoMovimento == max(saltoMovimento)))) |> 
+    gt_theme_538()
+
+```
+
+
