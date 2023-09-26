@@ -40,10 +40,17 @@ df %>%
     gt::gt() %>% 
     gtExtras::gt_theme_538()
 
+```
 
-vincitrici <- df %>% 
-    filter(Total == 0) %>% 
-    mutate(vinc = paste0("- ", cognome, " ", nome, " {{< fa medal size=normalsize >}}")) %>% 
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+vincitrici <- df |>  
+    filter(Total == 0,
+           cognome != "Total") |> 
+    mutate(vinc = paste0("- ", cognome, " ", nome, " {{< fa medal size=normalsize >}}")) |> 
     pull(vinc)
 
 if(length(vincitrici) == 0){
