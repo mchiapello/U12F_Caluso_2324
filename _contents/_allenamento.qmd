@@ -57,7 +57,7 @@ pres <- readr::read_csv(paste0(here::here(), "/data/presenze.csv"), show_col_typ
 players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE)
 
 if(!lubridate::dmy(params$date) %in% pres$date){
-    pres2 <- players |>
+    pres2 <- pres |>
       dplyr::bind_rows(players  |>
                          dplyr::mutate(date = lubridate::dmy(params$date),
                                        assenti = ifelse(cognome %in% params$assenti, 1, 0)))
