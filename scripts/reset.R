@@ -1,4 +1,3 @@
-.rs.restartR()
 library(fs)
 library(tidyverse)
 
