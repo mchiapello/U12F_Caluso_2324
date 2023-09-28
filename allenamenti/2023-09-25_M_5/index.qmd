@@ -21,3 +21,5 @@ execute:
 
 ## Obiettivi: Ricezione, Attacco
 {{< include ../../_contents/_allenamento.qmd >}}
+`r me = 9`
+{{< include ../../_contents/_mese.qmd >}}
