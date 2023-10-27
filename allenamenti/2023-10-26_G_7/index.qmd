@@ -1,0 +1,23 @@
+---
+date: 10/26/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
+params:
+  palestra: 'Arè'
+  date: '26/10/2023'
+  allenamento: '7'
+  assenti: ['Chimineti']
+  vincitori: ['']
+  impegno: 0.8
+  obiettivo: 0.7
+  allenatore: 0.8
+  miglioramenti: 0.7
+  voto: 0.8
+  url: https://youtu.be/yz6UcxySUoQ
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Amichevole
+{{< include ../../_contents/_allenamento.qmd >}}
