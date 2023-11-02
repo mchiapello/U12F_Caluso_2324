@@ -1,20 +1,20 @@
 # Define variavbles
 ### Folder
-d <- "10/26/2023"
+d <- "10/30/2023"
 date <- lubridate::mdy(d)
-n <- 7
+n <- 8
 ### File
 categories <- c("U12F", "2023-2024", "Pre-season")
-palestra <- c("Arè")
-assenti <- c("Chimineti")
+palestra <- c("Ubertini")
+assenti <- c("Celeste")
 vincitori <- c()
 impegno <- 0.8
 obiettivo <- 0.7
 allenatore <- 0.8
 miglioramenti <- 0.7
 voto <- 0.8
-obiettivi <- "Amichevole"
-url <- "https://youtu.be/yz6UcxySUoQ"
+obiettivi <- "Battuta-Ricezione"
+url <- NA
 
 # Prepare the folder
 dd <- lubridate::wday(date, label = TRUE)
