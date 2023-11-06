@@ -6,8 +6,8 @@ n <- 9
 ### File
 categories <- c("U12F", "2023-2024", "Pre-season")
 palestra <- c("Arè")
-assenti <- c("DeLuca", "LaMonaca", "Boni")
-vincitori <- c()
+assenti <- c("Deluca", "LaMonaca", "Boni")
+vincitori <- c("Panetto", "Torchia", "Mauro", "Gillone", "Cireddu", "Fragonas")
 impegno <- 0.8
 obiettivo <- 0.7
 allenatore <- 0.8

@@ -105,7 +105,7 @@ if(!lubridate::dmy(params$date) %in% pres$date){
   class <- class %>% 
         bind_rows(pres2 |> 
                     filter(date == lubridate::dmy(params$date)) |>
-                    mutate(vincitori = ifelse(numero %in% as.numeric(params$vincitori), 1, 0)))
+                    mutate(vincitori = ifelse(cognome %in% params$vincitori, 1, 0)))
 
     fs::file_copy(paste0(here::here(), "/data/classificaRaw.csv"),
                   paste0(here::here(), "/data/classificaRaw_old.csv"),
