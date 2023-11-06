@@ -122,7 +122,7 @@ x2 <- readr::read_csv(paste0(here::here(), "/data/classificaRaw.csv"), show_col_
 
 x2 |>
     dplyr::mutate(mese = lubridate::month(params$date)) |>
-    dplyr::filter(mese == lubridate::month(params$date)) |>
+    dplyr::filter(mese == lubridate::month(date)) |>
     dplyr::mutate(Punteggio = dplyr::case_when(vincitori == 1 & assenti == 0 ~ 3,
                                  vincitori == 0 & assenti == 0 ~ 1,
                                  TRUE ~ 0)) |>
