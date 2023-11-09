@@ -23,10 +23,13 @@ tit2 <- paste0("Le misurazioni del mese di ", mm[mm$n == lubridate::month(params
 # Create data
 x <- read_csv(paste0(here::here(), "/data/misurazioni.csv")) 
 
-x %>% 
-    drop_na() |> 
+x |> 
+  drop_na() |> 
+  dplyr::mutate(mese = lubridate::month(date)) |>
+  dplyr::filter(mese == lubridate::month(params$date)) |> 
   mutate(atleta = str_replace(atleta, "-", " ")) |> 
-  arrange(desc(saltoFerma)) |> 
+  arrange(desc(saltoMovimento)) |> 
+  select(-mese) |> 
     gt()  |>  
     # HIGHLIGHT massima altezza 
      tab_style(style = cell_fill(color = "#04BF8A"),

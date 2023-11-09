@@ -14,7 +14,6 @@ tmp <- tibble(date = lubridate::dmy("06/11/2023"),
        "Mauro-Sharon" = c(167, 202, 227, 234),
        "La Monaca-Greta" = NA,
        "Torchia-Arianna" = c(161,203,221,227),
-       "Deluca-Aurora" = NA,
        "Celeste-Sara" = c(149,183,212,218),
        "De Luca-Aurora" = NA) |> 
   pivot_longer(cols = contains("-"),

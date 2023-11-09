@@ -162,7 +162,7 @@ x2 %>%
 #| message: false
 #| warning: false
 
-if (!is.na(params$url)){
+if (params$url != "NA"){
   video <- paste0("{{< video ", params$url," >}}")
 } else {
   video <- paste0("Nessun video per questo allenamento.")

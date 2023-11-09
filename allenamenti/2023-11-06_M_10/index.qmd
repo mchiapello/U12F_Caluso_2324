@@ -1,0 +1,25 @@
+---
+date: 11/06/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
+params:
+  palestra: 'Ubertini'
+  date: '06/11/2023'
+  allenamento: '10'
+  assenti: ['Deluca', 'LaMonaca', 'Gerace']
+  vincitori: ['Fragonas', 'Panetto', 'Boni']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.7
+  voto: 0.8
+  url: 'NA'
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Ricezione-Gestione partita
+{{< include ../../_contents/_allenamento.qmd >}}
+
+{{< include ../../_contents/_misurazioni.qmd >}}
