@@ -47,7 +47,10 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 # out <- "/Users/chiapell/Documents/personale/PALLAVOLO/U14F_blog_2223/data/002_Partite/2023-03-05_To.volley"
 
 
-
+dvw <- dir_ls(out, regexp = "dvw$")
+x <- dv_read(dvw)
+dv_meta_video(x) <- "https://youtu.be/zE0gixhzaO0"
+dv_write(x, dvw)
 
 
 
