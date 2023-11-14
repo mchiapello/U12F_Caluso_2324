@@ -1,10 +1,12 @@
 ---
-title: "BCV Foglizzo - sGianFer"
+title: "BCV Caluso - GianFer"
+date: 11/11/2023
+categories: ['U12F', '2023-2024', 'Primo Campionato', 'Andata']
 format:
   html:
     toc: false
     theme: journal
-    page-layout: custom
+    page-layout: article
     number-sections: false
 execute:
   echo: false
@@ -12,6 +14,7 @@ execute:
   warning: false
 ---
 
+## Informazioni generali
 ```{r}
 #| include: false
 library(tidyverse)
@@ -21,80 +24,22 @@ library(gtExtras)
 library(patchwork)
 source(paste0(here::here(), "/scripts/999_utils.R"))
 # Read data
-file <- fs::dir_ls(here::here("partite/2023-11-11_GianFerr/"), 
+file <- fs::dir_ls(paste0(here::here(), "/partite/2023-11-11_GianFerr"), 
                    regexp = "dvw$")
 x <- dv_read(file)
 noi <- teams(x)[1]
 loro <- teams(x)[teams(x) != noi]
 ```
 
-::: grid
-::: g-col-3
-```{r}
-x$meta$teams %>%
-    select(team, sets_won) %>% 
-    gt(id = "one") %>%
-     cols_align(
-    align = "center") %>% 
-    tab_header(title = "Risultato finale") %>% 
-    fmt_markdown(columns = everything()) %>%
-    tab_options(table.width = px(120),
-                column_labels.hidden = TRUE) %>% 
-    opt_css(
-    css = "
-    #one .gt_header {
-      padding: 2px 3px;
-      font-size: 10px;
-      color: lightgreen;
-      text-align: center !important;
-    }
-    #one .gt_row {
-      padding: 2px 3px;
-      font-size: 9px;
-    }
-    #one .gt_col_heading {
-      text-align: center !important;
-    }
-    ") %>% 
-    gtExtras::gt_theme_nytimes()
-    
-```
-:::
 
-::: g-col-3
 ```{r}
-data <- as.character(x$meta$match$date)
-stag <- x$meta$match$season
-lea <- x$meta$match$league
-pha <- x$meta$match$phase
-num <- x$meta$match$match_number
-meta1 <- tibble(name = c("Data", "Stagione", "Campionato", "Fase", "Partita"),
-                values = c(data, stag, lea, pha, num))
-meta1 %>% 
-    gt(id = "two") %>%
-    tab_options(#table.width = px(150),
-                column_labels.hidden = TRUE) %>% 
-    tab_options(table.width = px(150)) %>% 
-    opt_css(
-    css = "
-    #two .gt_header {
-      padding: 2px 3px;
-      font-size: 10px;
-      color: lightgreen;
-    }
-    #two .gt_row {
-      padding: 2px 3px;
-      font-size: 9px;
-    }
-    #two .gt_col_heading {
-      text-align: center !important;
-    }
-    ")%>% 
-    gtExtras::gt_theme_nytimes()
+#| results: asis
+glue::glue("Il {x$meta$match$date} abbiamo giocato nel {x$meta$match$phase} ({x$meta$match$league}) contro il {loro}.    
+         Il risultato finale è stato: {x$meta$teams$team[1]} ({x$meta$teams$sets_won[1]}) - {x$meta$teams$team[2]} ({x$meta$teams$sets_won[2]}).")
 ```
-:::
 
-::: g-col-6
+{{< video https://youtu.be/zE0gixhzaO0 >}}
+
 ```{r}
 timeAP <- plays(x) %>%
   dplyr::filter(!is.na(skill) & !skill %in% c("Timeout", "Technical timeout") & !is.na(video_time)) %>%
@@ -139,16 +84,16 @@ x$meta$result %>%
     gt(id = "third") %>%
     cols_align(
     align = "center") %>% 
-    tab_options(table.width = px(350)) %>% 
+    tab_options(table.width = px(550)) %>% 
     opt_css(
     css = "
     #third .gt_col_heading {
       padding: 2px 3px;
-      font-size: 10px;
+      font-size: 14px;
     }
     #third .gt_row {
       padding: 2px 3px;
-      font-size: 9px;
+      font-size: 12px;
     }
     #third .gt_col_heading {
       text-align: center !important;
@@ -156,11 +101,8 @@ x$meta$result %>%
     ")%>% 
     gtExtras::gt_theme_nytimes()
 ```
-:::
-:::
 
-::: grid
-::: g-col-12
+## Progressione punteggio 
 ```{r}
 #| fig-width: 100
 #| fig-asp: 0.1
@@ -204,114 +146,66 @@ font_size <- 20
 
 
 ```
-:::
-:::
 
-::: grid
-::: g-col-12
+
+## Punti/Errori
+
 ```{r}
-# Summary
-## NOI
-vr_points(x, by = "set", team_select = loro) %>% 
+#| results: asis
+pointsN <- vr_points(x, by = "set", team_select = noi) %>% 
     bind_cols(vr_serve(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
     bind_cols(vr_reception(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
     bind_cols(vr_attack(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
     bind_cols(vr_freeball(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_block(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    ### GT TABLE
-    gt(id = "five") %>%
-    # tab_header(
-    #   title = paste0(noi)) %>% 
-    tab_spanner(
-        label = "Punti",
-        columns = Tot...2:Op.Er) %>% 
-    tab_spanner(
-        label = "Battuta",
-        columns = Tot...7:Pos) %>% 
-    tab_spanner(
-        label = "Ricezione",
-        columns = Tot...12:`(Exc%)`) %>% 
-    tab_spanner(
-        label = "Attacco",
-        columns = Tot...17:`Pts%`) %>% 
-    tab_spanner(
-        label = "Freeball",
-        columns = Tot...22:Err...23) %>%
-    tab_spanner(
-        label = "Muro",
-        columns = Punto) %>%
-    cols_label(
-        set_number = html("Set"),
-        Tot...2 = html("<strong>Tot</strong>"),
-        Ser = html("Bat"),
-        Blo...5 = html("Muro"),
-        Tot...7 = html("<strong>Tot</strong>"),
-        Err...8 = html("<strong>Err</strong>"),
-        Pts...9 = html("Pts"),
-        Tot...12 = html("<strong>Tot</strong>"),
-        Err...13 = html("<strong>Err</strong>"),
-        Tot...17 = html("<strong>Tot</strong>"),
-        Err...18 = html("<strong>Err</strong>"),
-        Blo...19 = html("Muro"),
-        Pts...20 = html("Pts"),
-        Tot...22 = html("<strong>Tot</strong>"),
-        Err...23 = html("<strong>Err</strong>"),
-        Punto = html("Pts")) %>% 
+    bind_cols(vr_block(x, by = "set", team_select = noi) %>% select(-set_number))
+pointsL <- vr_points(x, by = "set", team_select = loro) %>% 
+    bind_cols(vr_serve(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_reception(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_attack(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_freeball(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_block(x, by = "set", team_select = loro) %>% select(-set_number))
+glue::glue(
+    "In totale abbiamo fatto {sum(pointsN$Tot...2)} punti e {sum(pointsL$Op.Er)} errori. Mentre l'altra squadra ha fatto {sum(pointsL$Tot...2)} punti e {sum(pointsN$Op.Er)} errori."
+)
+
+```
+
+
+```{r}
+tibble(Set = pointsN$set_number, 
+       `Punti nostri` = pointsN$Tot...2,
+       `Errori nostri` = pointsL$Op.Er,
+       `Differenza nostra` = `Punti nostri` - `Errori nostri`,
+       `Punti loro` = pointsL$Tot...2,
+       `Errori loro` = pointsN$Op.Er,
+       `Differenza loro` = `Punti loro` - `Errori loro`) %>% 
+    gt(id = "third") %>%
     cols_align(
     align = "center") %>% 
-    tab_options(table.width = px(500),
-                row.striping.include_table_body = TRUE) %>% 
-        tab_style(style = cell_borders(sides = "left",
-                                   color = "grey50",
-                                   weight = px(.9),
-                                   style = "solid"),
-              locations = cells_body(columns = starts_with("To"),
-                                     rows = everything())) %>% 
-    tab_style(style = cell_borders(sides = "left",
-                                   color = "grey50",
-                                   weight = px(.9),
-                                   style = "solid"),
-              locations = cells_body(columns = starts_with("set1"),
-                                     rows = everything())) %>% 
-    tab_style(style = cell_borders(sides = "left",
-                                   color = "grey50",
-                                   weight = px(.9),
-                                   style = "solid"),
-              locations = cells_body(columns = last_col(),
-                                     rows = everything())) %>% 
-    # tab_style(
-    # style = list(
-    #   cell_fill(color = "grey60"),
-    #   cell_text(weight = "bold")
-    #   ),
-    # locations = cells_body(
-    #   columns = Tot...2,
-    #   rows = Tot...2 == max(Tot...2))) %>% 
+    tab_options(table.width = px(350)) %>% 
     opt_css(
     css = "
-    #five .gt_col_heading {
+    #third .gt_col_heading {
       padding: 2px 3px;
-      font-size: 8px;
+      font-size: 14px;
     }
-    #five .gt_column_spanner {
-      padding: 0px 0px;
-      font-size: 9px;
-    }
-    #five .gt_row {
+    #third .gt_row {
       padding: 2px 3px;
-      font-size: 9px;
+      font-size: 12px;
     }
-    #five .gt_col_heading {
+    #third .gt_col_heading {
       text-align: center !important;
     }
-    ")
+    ")%>% 
+    gtExtras::gt_theme_nytimes()
 ```
-:::
-:::
 
-::: grid
-::: g-col-3
+
+
+
+
 ```{r}
+#| results: asis
 vr_content_team_each <- function(x, which_team = noi) {
     if(which_team == noi){
         home <- teams(x)[teams(x) == noi]
@@ -340,59 +234,142 @@ vr_content_team_each <- function(x, which_team = noi) {
           
 }
 noi1 <- vr_content_team_each(x, which_team = noi)
-noi1 %>% 
-    dplyr::slice(1:4) %>% 
-    gt(id = "six") %>% 
-    tab_options(table.width = px(170),
-                column_labels.hidden = TRUE) %>%
-    tab_header(title = paste0(noi)) %>% 
-    tab_source_note(noi1 %>% 
-                        dplyr::slice(5:6) %>% 
-                        pull(name)) %>% 
-    cols_align(align = "center") %>% 
+loro1 <- vr_content_team_each(x, which_team = loro)
+glue::glue(
+    "Riusciamo a fare {noi1$name[5]}, mentre gli avversari fanno {loro1$name[5]}.    
+    Riusciamo a fare {noi1$name[6]}, mentre gli avversari fanno {loro1$name[6]}."
+)
+```
+
+
+```{r}
+#| results: asis
+
+glue::glue("Su un totale di {sum(pointsN$Tot...17) + sum(pointsN$Tot...22)} palle attaccate {sum(pointsN$Tot...22)} sono state freeballs ({round(sum(pointsN$Tot...22)/(sum(pointsN$Tot...17) + sum(pointsN$Tot...22)), 2)*100}%).")
+```
+
+:::{.grid}
+
+::: {.g-col-6}
+### Attacco
+
+
+```{r}
+t8 <- vr_attack(x, by = "set", team_select = noi)
+t10 <- vr_freeball(x, by = "set", team_select = noi)
+
+t8 %>% 
+    gt(id = "third") %>%
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(350)) %>% 
     opt_css(
     css = "
-    #six .gt_title {
-      font-size: 10px !important;
-    }
-    #six .gt_sourcenote {
-      font-size: 10px !important;
-    }
-    #six .gt_col_heading {
+    #third .gt_col_heading {
       padding: 2px 3px;
-      font-size: 10px;
+      font-size: 14px;
     }
-    #six .gt_column_spanner {
-      padding: 0px 0px;
-      font-size: 8px;
-    }
-    #six .gt_row {
+    #third .gt_row {
       padding: 2px 3px;
-      font-size: 9px;
+      font-size: 12px;
     }
-    #six .gt_col_heading {
+    #third .gt_col_heading {
       text-align: center !important;
     }
-     #six .gt_row {
-      padding: 1px 0px 1px 0px !important;
-    }
-    ")
-
-loro1 <- vr_content_team_each(x, which_team = loro)
-loro1 %>% 
-     dplyr::slice(1:4) %>% 
-     gt(id = "six") %>% 
-    tab_options(table.width = px(170),
-                column_labels.hidden = TRUE) %>%
-    tab_header(title = paste0(loro)) %>% 
-    tab_source_note(loro1 %>% 
-                        dplyr::slice(5:6) %>% 
-                        pull(name)) %>% 
-    cols_align(align = "center")
+    ")%>% 
+    gtExtras::gt_theme_nytimes()
 ```
 :::
 
-::: g-col-9
+::: {.g-col-4}
+### Freeball
+
+
+```{r}
+t10 %>% 
+    gt(id = "third") %>%
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(350)) %>% 
+    opt_css(
+    css = "
+    #third .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 14px;
+    }
+    #third .gt_row {
+      padding: 2px 3px;
+      font-size: 12px;
+    }
+    #third .gt_col_heading {
+      text-align: center !important;
+    }
+    ")%>% 
+    gtExtras::gt_theme_nytimes()
+```
+
+:::
+:::
+
+
+## Ricezione
+
+```{r}
+# RECEPTION
+t6 <- vr_reception(x, by = "set", team_select = noi)
+
+t6 %>% 
+    gt(id = "third") %>%
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(350)) %>% 
+    opt_css(
+    css = "
+    #third .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 14px;
+    }
+    #third .gt_row {
+      padding: 2px 3px;
+      font-size: 12px;
+    }
+    #third .gt_col_heading {
+      text-align: center !important;
+    }
+    ")%>% 
+    gtExtras::gt_theme_nytimes()
+```
+
+## Servizio
+
+```{r}
+# SERVE
+t4 <- vr_serve(x, by = "set", team_select = noi)
+
+t4 %>% 
+   gt(id = "third") %>%
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(350)) %>% 
+    opt_css(
+    css = "
+    #third .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 14px;
+    }
+    #third .gt_row {
+      padding: 2px 3px;
+      font-size: 12px;
+    }
+    #third .gt_col_heading {
+      text-align: center !important;
+    }
+    ")%>% 
+    gtExtras::gt_theme_nytimes()
+```
+
+## Zona di attacco/battuta
+::: {.g-col-9}
 ```{r}
 #| fig-asp: .5
 #| fig-width: 30
@@ -502,7 +479,6 @@ library(patchwork)
 p1 + p2 + p3 +
     plot_layout(guides = 'collect')
 ```
-:::
 :::
 
 ::: grid
