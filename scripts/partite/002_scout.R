@@ -46,13 +46,15 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 # refx <- ovideo::ov_shiny_court_ref(video_file = video_file, t = 2800)
 # out <- "/Users/chiapell/Documents/personale/PALLAVOLO/U14F_blog_2223/data/002_Partite/2023-03-05_To.volley"
 
-
+# Link Youtube video with scout
 dvw <- dir_ls(out, regexp = "dvw$")
 x <- dv_read(dvw)
 dv_meta_video(x) <- "https://youtu.be/zE0gixhzaO0"
 dv_write(x, dvw)
+file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"))
 
-
+# Remove video file
+file_delete(dir_ls(out, regexp = "mp4$"))
 
 
 
