@@ -1,0 +1,23 @@
+---
+date: 11/16/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
+params:
+  palestra: 'Ubertini'
+  date: '16/11/2023'
+  allenamento: '13'
+  assenti: ['Panetto']
+  vincitori: ['Cireddu', 'Gillone', 'Chimineti', 'Mauro']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.7
+  voto: 0.8
+  url: NA
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Battuta-Attacco
+{{< include ../../_contents/_allenamento.qmd >}}
