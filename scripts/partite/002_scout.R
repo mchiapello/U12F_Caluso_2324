@@ -5,13 +5,14 @@ video_file  <- dir_ls(out, regexp = "*mp4$")
 ## BVC Foglizzese
 elat("data/elencoAtlete.csv", team = "BCV Caluso", out = out)
 ## Avversari
+tibble(numero = NA, cognome = NA, nome = NA) |> write_csv(paste0(out, "/Frassati.csv"))
 elat(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".csv"), team = teams$team[teams$team != "BCV Caluso"], out = out)
 
 
 x <- dv_create(match = match, 
                teams = teams, 
-               players_v = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS")), 
-               players_h = readRDS(paste0(out, "/BCV Caluso.RDS")))
+               players_h = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS")), 
+               players_v = readRDS(paste0(out, "/BCV Caluso.RDS")))
 x$meta$teams <- teams
 
 ## Court ref
@@ -20,8 +21,8 @@ saveRDS(refx, paste0(out, "/mrefx.RDS"))
 
 ## enter the team lineups for set 1
 x <- dv_set_lineups(x, set_number = 1, 
-                    lineups = list(c(11,4,16,12,6,15), 
-                                   c(13,20,12,21,16,7)), 
+                    lineups = list(c(57,13,1,5,9,24), 
+                                   c(1,4,11,12,6,15)), 
                     setter_positions = c(1, 1))
 
 # Subset the attacks
@@ -49,9 +50,9 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 # Link Youtube video with scout
 dvw <- dir_ls(out, regexp = "dvw$")
 x <- dv_read(dvw)
-dv_meta_video(x) <- "https://youtu.be/zE0gixhzaO0"
+dv_meta_video(x) <- "https://youtu.be/rbh6QBCBrqw"
 dv_write(x, dvw)
-file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"))
+file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"), overwrite = TRUE)
 
 # Remove video file
 file_delete(dir_ls(out, regexp = "mp4$"))
