@@ -26,14 +26,14 @@ x <- dv_set_lineups(x, set_number = 1,
                     lineups = list(c(57,13,1,5,9,24), 
                                    c(1,4,11,12,6,15)), 
                     setter_positions = c(1, 1))
-x <- dv_set_lineups(x, set_number = 2, 
-                    lineups = list(c(8,57,1,7,13,10), 
-                                   c(4,16,3,6,15,13)), 
-                    setter_positions = c(1, 1))
-x <- dv_set_lineups(x, set_number = 3, 
-                    lineups = list(c(57,13,1,7,9,77), 
-                                   c(1,4,17,5,6,3)), 
-                    setter_positions = c(1, 1))
+# x <- dv_set_lineups(x, set_number = 2, 
+#                     lineups = list(c(8,57,1,7,13,10), 
+#                                    c(4,16,3,6,15,13)), 
+#                     setter_positions = c(1, 1))
+# x <- dv_set_lineups(x, set_number = 3, 
+#                     lineups = list(c(57,13,1,7,9,77), 
+#                                    c(1,4,17,5,6,3)), 
+#                     setter_positions = c(1, 1))
 # Subset the attacks
 x$meta$attacks <- read_csv("data/myAttacks.csv")
 
