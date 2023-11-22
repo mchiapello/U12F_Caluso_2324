@@ -13,6 +13,8 @@ x <- dv_create(match = match,
                teams = teams, 
                players_h = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS")), 
                players_v = readRDS(paste0(out, "/BCV Caluso.RDS")))
+teams <- teams |> 
+  arrange(home_away_team)
 x$meta$teams <- teams
 
 ## Court ref
@@ -28,12 +30,17 @@ x <- dv_set_lineups(x, set_number = 1,
 # Subset the attacks
 x$meta$attacks <- read_csv("data/myAttacks.csv")
 
+# Change shortcuts
+sc <- ov_default_shortcuts()
+sc$hide_popup <- c("k")
+
 # Do the scouting
 ov_scouter(x, video_file = video_file,
            court_ref = readRDS(paste0(out, "/mrefx.RDS")),
            scouting_options = list(transition_sets = TRUE,
                                    attack_table = read_csv("data/myAttacks.csv")),
            app_styling = list(review_pane_width = 50),
+          # shortcuts = sc,
            launch_browser = TRUE)
 
 # Restart scouting
@@ -41,6 +48,7 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
            scouting_options = list(transition_sets = TRUE,
                                    attack_table = read_csv("data/myAttacks.csv")),
            app_styling = list(review_pane_width = 50),
+         #  shortcuts = sc,
            launch_browser = TRUE)
 
 # Update court reference
