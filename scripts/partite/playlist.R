@@ -28,7 +28,7 @@ map(px3 %>% filter(Nome != "unknown player") %>%
       unique, fs::dir_create)
 setwd(here::here())
 
-px3 <- px3 %>% 
+px3 <-  px3 %>% 
   filter(Nome != "unknown player") %>%
   mutate(out = map(data, ovideo::ov_video_playlist, meta = x$meta,
                    extra_cols = extra_cols),
@@ -44,3 +44,10 @@ for(i in 1:nrow(px4)){
                               outfile = px4$outfile[i])
 }
 
+
+# x <- read_csv("~/Downloads/playlist.csv")
+# 
+# 
+# ovideo::ov_playlist_to_html(x, 
+#                             table_cols = extra_cols,
+#                             outfile = "~/Downloads/out.html")
