@@ -6,7 +6,7 @@ GENERATOR-PRG: ovscout2-R
 GENERATOR-REL: 0.2.7
 GENERATOR-VER: 
 GENERATOR-NAM: 
-LASTCHANGE-DAY: 2023/11/22 16.59.46
+LASTCHANGE-DAY: 2023/11/23 07.19.20
 LASTCHANGE-IDP: datavolley
 LASTCHANGE-PRG: datavolley-R
 LASTCHANGE-REL: 1.5.7
@@ -74,7 +74,7 @@ KE;;No First Tempo;;0;0000;0000;0000;5858,5826,6426,6458,6458;12632256;
 =~~~#~~~=~~~~~~~=/~~#~~~=/~~#~~~=~~~~~~~=~~~~~~~=~~~~~~~
 [3RESERVE]
 [3VIDEO]
-Camera0=/Users/chiapell/personale/PALLAVOLO/U12F_Caluso_2324/partite/2023-11-17_Frassati/Frassati-BCV.mp4
+0=https://youtu.be/X10MdY-t1AA
 [3SCOUT]
 *P57>LUp;;;;;;;15.08.03;1;5;5;;;;57;13;1;5;9;24;1;4;11;12;6;15;
 *z1>LUp;;;;;;;15.08.03;1;1;5;;;;57;13;1;5;9;24;1;4;11;12;6;15;
