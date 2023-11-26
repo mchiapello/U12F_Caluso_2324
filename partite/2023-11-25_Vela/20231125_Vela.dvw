@@ -1,0 +1,81 @@
+[3DATAVOLLEYSCOUT]
+FILEFORMAT: 2.0
+GENERATOR-DAY: 2023/11/26 08.31.54
+GENERATOR-IDP: ovscout2
+GENERATOR-PRG: ovscout2-R
+GENERATOR-REL: 0.2.7
+GENERATOR-VER: 
+GENERATOR-NAM: 
+LASTCHANGE-DAY: 2023/11/26 08.32.47
+LASTCHANGE-IDP: datavolley
+LASTCHANGE-PRG: datavolley-R
+LASTCHANGE-REL: 1.5.7
+LASTCHANGE-VER: 
+LASTCHANGE-NAM: 
+[3MATCH]
+2023/11/25;00.00.00;2022-2023;U12 - UISP;Andata;True;3;122107;UTF-8;1;Z;
+;;12345;;;;;;
+[3TEAMS]
+BCV;BCV Caluso;2;Chiapello;;16776960;
+VEL;Vela;1;;;255;
+[3MORE]
+;;;;;Marco Chiapello;
+;0;0;
+[3COMMENTS]
+;;;;
+[3SET]
+True;;;;;;
+True;;;;;;
+True;;;;;;
+True;;;;;;
+True;;;;;;
+[3PLAYERS-H]
+0;5;1;;;;;;Chi-Mar;Chimineti;Martina;;;6;False;;;;;;;;
+0;3;2;4;;;;;Fra-Mat;Fragonas;Matilde;;;6;False;;;;;;;;
+0;6;3;5;;;;;Cir-Ade;Cireddu;Adele;;;6;False;;;;;;;;
+0;1;4;1;;;;;Bud-Eri;Budau;Erika;;;6;False;;;;;;;;
+0;7;5;;;;;;Pan-Mar;Panetto;Margherita;;;6;False;;;;;;;;
+0;11;6;6;;;;;Ger-Val;Gerace;Valeria;;;6;False;;;;;;;;
+0;4;7;2;;;;;Bon-Isa;Boni;Isabella;;;6;False;;;;;;;;
+0;15;8;;;;;;Ber-Sha;Beretta;Sharon;;;6;False;;;;;;;;
+0;12;9;3;;;;;Gil-Ari;Gillone;Arianna;;;6;False;;;;;;;;
+0;13;10;;;;;;Mau-Sha;Mauro;Sharon;;;6;False;;;;;;;;
+0;16;11;;;;;;LaM-Gre;LaMonaca;Greta;;;6;False;;;;;;;;
+0;8;12;;;;;;Tor-Ari;Torchia;Arianna;;;6;False;;;;;;;;
+0;17;13;;;;;;Del-Aur;Deluca;Aurora;;;6;False;;;;;;;;
+0;2;14;;;;;;Cel-Sar;Celeste;Sara;;;6;False;;;;;;;;
+[3PLAYERS-V]
+0;60;1;3;;;;;Bor-A;Bordì;A;;;6;False;;;;;;;;
+0;62;2;6;;;;;Can-L;Canta;L;;;6;False;;;;;;;;
+0;63;3;;;;;;Fer-E;Ferrante;E;;;6;False;;;;;;;;
+0;64;4;5;;;;;La -M;La Rosa;M;;;6;False;;;;;;;;
+0;65;5;2;;;;;Maz-N;Mazzocchi;N;;;6;False;;;;;;;;
+0;66;6;;;;;;Pig-V;Piga;V;;;6;False;;;;;;;;
+0;67;7;1;;;;;Pre-G;Prencipe;G;;;6;False;;;;;;;;
+0;68;8;;;;;;Zuc-A;Zucca;A;;;6;False;;;;;;;;
+0;69;9;;;;;;Sic-J;Sicoli;J;;;6;False;;;;;;;;
+0;70;10;4;;;;;Vin-G;Vinci;G;;;6;False;;;;;;;;
+[3ATTACKCOMBINATION]
+VP;8;C;H;High Pipe;;255;4150;P;;;1.98125;2.83333333333333
+XP;8;C;M;Pipe;;16711680;4150;P;;;1.98125;2.83333333333333
+V5;4;R;H;High Ball Pos 4;;255;4912;F;;;0.55625;3.42592592592593
+V6;2;L;H;High Ball Pos 2;;255;4988;B;;;3.40625;3.42592592592593
+V3;3;C;O;High Ball Pos 3;;255;4950;-;;;1.98125;3.42592592592593
+[3SETTERCALL]
+K1;;Front Quick;;16711680;3949;4454;4958;;;
+K2;;Back Quick;;16711680;3864;4278;4974;;;
+K7;;Seven;;16711680;3923;4426;4930;;;
+KC;;Quick in 3;;16711680;3849;4449;5049;;;
+KM;;Shifted to 2;;16711680;0000;0000;0000;4924,5524,5530,6332,6312,5012,5024;12632256;
+KP;;Shifted to 4;;16711680;0000;0000;0000;5457,5057,5557,5552,6352,6364,5377,5077,5058,5058;12632256;
+KE;;No First Tempo;;0;0000;0000;0000;5858,5826,6426,6458,6458;12632256;
+[3WINNINGSYMBOLS]
+=~~~#~~~=~~~~~~~=/~~#~~~=/~~#~~~=~~~~~~~=~~~~~~~=~~~~~~~
+[3RESERVE]
+[3VIDEO]
+Camera0=/Users/chiapell/personale/PALLAVOLO/U12F_Caluso_2324/partite/2023-11-25_Vela/20231125_Vela.mp4
+[3SCOUT]
+*P01>LUp;;;;;;;08.32.10;1;1;1;;;;1;4;12;3;6;11;67;65;60;70;64;62;
+*z1>LUp;;;;;;;08.32.10;1;1;1;;;;1;4;12;3;6;11;67;65;60;70;64;62;
+aP67>LUp;;;;;;;08.32.10;1;1;1;;;;1;4;12;3;6;11;67;65;60;70;64;62;
+az1>LUp;;;;;;;08.32.10;1;1;1;;;;1;4;12;3;6;11;67;65;60;70;64;62;

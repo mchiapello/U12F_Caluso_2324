@@ -5,16 +5,16 @@ video_file  <- dir_ls(out, regexp = "*mp4$")
 ## BVC Foglizzese
 elat("data/elencoAtlete.csv", team = "BCV Caluso", out = out)
 ## Avversari
-tibble(numero = NA, cognome = NA, nome = NA) |> write_csv(paste0(out, "/Frassati.csv"))
+tibble(numero = NA, cognome = NA, nome = NA) |> write_csv(paste0(out, "/vela.csv"))
 elat(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".csv"), team = teams$team[teams$team != "BCV Caluso"], out = out)
 
 
 x <- dv_create(match = match, 
                teams = teams, 
-               players_h = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS")), 
-               players_v = readRDS(paste0(out, "/BCV Caluso.RDS")))
-teams <- teams |> 
-  arrange(home_away_team)
+               players_h = readRDS(paste0(out, "/BCV Caluso.RDS")),
+               players_v = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS")))
+# teams <- teams |> 
+#   arrange(home_away_team)
 x$meta$teams <- teams
 
 ## Court ref
@@ -23,17 +23,10 @@ saveRDS(refx, paste0(out, "/mrefx.RDS"))
 
 ## enter the team lineups for set 1
 x <- dv_set_lineups(x, set_number = 1, 
-                    lineups = list(c(57,13,1,5,9,24), 
-                                   c(1,4,11,12,6,15)), 
+                    lineups = list(c(1,4,12,3,6,11), 
+                                   c(67,65,60,70,64,62)), 
                     setter_positions = c(1, 1))
-# x <- dv_set_lineups(x, set_number = 2, 
-#                     lineups = list(c(8,57,1,7,13,10), 
-#                                    c(4,16,3,6,15,13)), 
-#                     setter_positions = c(1, 1))
-# x <- dv_set_lineups(x, set_number = 3, 
-#                     lineups = list(c(57,13,1,7,9,77), 
-#                                    c(1,4,17,5,6,3)), 
-#                     setter_positions = c(1, 1))
+
 # Subset the attacks
 x$meta$attacks <- read_csv("data/myAttacks.csv")
 
