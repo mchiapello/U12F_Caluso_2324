@@ -51,3 +51,31 @@ for(i in 1:nrow(px4)){
 # ovideo::ov_playlist_to_html(x, 
 #                             table_cols = extra_cols,
 #                             outfile = "~/Downloads/out.html")
+
+
+
+
+library(ovlytics)
+px_au <- ov_augment_plays(px)
+px_au |> pull(ts_pass_quality)
+
+attack_eff(px)
+
+plays(x) %>% dplyr::filter(skill == "Attack") %>% group_by(player_name) %>%
+dplyr::summarize(N_attacks = n(), att_eff = attack_eff(evaluation))
+
+plays(x) %>% dplyr::filter(skill == "Serve") %>% group_by(player_name) %>%
+  dplyr::summarize(N_attacks = n(), att_eff = serve_eff(evaluation))
+
+plays(x) %>% dplyr::filter(skill == "Reception") %>% group_by(player_name) %>%
+  dplyr::summarize(N_attacks = n(), att_eff = reception_eff(evaluation)) |> 
+  arrange(att_eff)
+
+
+library(volleysim)
+library(datavolley)
+library(dplyr)
+
+## calculate the rates we need to simulate
+rates <- vs_estimate_rates(x, target_team = "each")
+vs_simulate_match(rates)
