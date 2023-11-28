@@ -1,0 +1,23 @@
+---
+date: 11/27/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
+params:
+  palestra: 'Ubertini'
+  date: '27/11/2023'
+  allenamento: '16'
+  assenti: ['Celeste']
+  vincitori: ['Boni', 'Mauro', 'DeLuca', 'Gerace', 'Gillone', 'Fragonas']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.7
+  voto: 0.8
+  url: NA
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Alzata-Attacco
+{{< include ../../_contents/_allenamento.qmd >}}
