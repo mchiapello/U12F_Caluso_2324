@@ -388,7 +388,7 @@ p1 <- attack_rate %>%
     mutate(rate = range02(rate)) %>%
     ggplot(aes(x, y, fill = rate)) +
     geom_tile() +
-    ggcourt(labels = "") +
+    ggcourt(labels = "", show_3m_line = TRUE) +
     scale_fill_gradient2(low = "white",
                          high = "black",
                          name = "Scala Intensità") +

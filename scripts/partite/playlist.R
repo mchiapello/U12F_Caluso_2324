@@ -45,16 +45,6 @@ for(i in 1:nrow(px4)){
 }
 
 
-# x <- read_csv("~/Downloads/playlist.csv")
-# 
-# 
-# ovideo::ov_playlist_to_html(x, 
-#                             table_cols = extra_cols,
-#                             outfile = "~/Downloads/out.html")
-
-
-
-
 library(ovlytics)
 px_au <- ov_augment_plays(px)
 px_au |> pull(ts_pass_quality)
