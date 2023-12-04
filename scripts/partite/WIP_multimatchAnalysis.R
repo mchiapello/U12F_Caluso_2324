@@ -290,3 +290,33 @@ x |>
   filter(home_team_score == max(home_team_score),
          visiting_team_score == max(visiting_team_score)) |> 
   distinct()
+
+################################################################################
+# Player progress
+ii <- px |> 
+  mutate(time2 = lubridate::ymd(str_sub(as.character(time), 
+                                        start = 1L, end = 10L))) |> 
+  select(match_id, team, time = time2) |> 
+  filter(team != "BCV Caluso") |> 
+  distinct()
+
+## Battuta
+px |> 
+  filter(team == "BCV Caluso") |>
+  filter(skill == "Serve") |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("Negative, opponent free attack",
+                                                   "OK, no first tempo possible") ~ "Negative",
+                                 evaluation %in% c("Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 TRUE ~ evaluation),
+         evac = case_when(evaluation2 == "Ace" ~ "#1a9850",
+                          evaluation2 == "Error" ~ "#a50026",
+                          evaluation2 == "Positive" ~ "#a6d96a",
+                          evaluation2 == "Negative" ~ "#f46d43")) |> 
+  count(match_id, player_name, skill, evaluation2, evac) |> 
+  left_join(ii) |> 
+  ggplot(aes(x = time, y = n, color = evac)) +
+  geom_line() +
+  geom_point(size = .3) +
+  scale_color_identity("Legend", guide = "legend", label = c("Ace", "Error", "Positive", "Negative")) +
+  facet_wrap(vars(player_name), scales = "free")
