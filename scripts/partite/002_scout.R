@@ -5,16 +5,19 @@ video_file  <- dir_ls(out, regexp = "*mp4$")
 ## BVC Foglizzese
 elat("data/elencoAtlete.csv", team = "BCV Caluso", out = out)
 ## Avversari
-tibble(numero = NA, cognome = NA, nome = NA) |> write_csv(paste0(out, "/vela.csv"))
-elat(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".csv"), team = teams$team[teams$team != "BCV Caluso"], out = out)
+tibble(numero = NA, cognome = NA, nome = NA) |> 
+  write_csv(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".csv"))
+elat(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".csv"), 
+     team = teams$team[teams$team != "BCV Caluso"], out = out)
 
-
+# Ricordarsi di assegnare correttamente squadre in casa e fuori casa => 2 punti da cambiare
 x <- dv_create(match = match, 
                teams = teams, 
-               players_h = readRDS(paste0(out, "/BCV Caluso.RDS")),
-               players_v = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS")))
-# teams <- teams |> 
-#   arrange(home_away_team)
+               players_v = readRDS(paste0(out, "/BCV Caluso.RDS")), #1
+               players_h = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS"))) #1
+#2
+teams <- teams |>
+  arrange(home_away_team)
 x$meta$teams <- teams
 
 ## Court ref
@@ -23,8 +26,8 @@ saveRDS(refx, paste0(out, "/mrefx.RDS"))
 
 ## enter the team lineups for set 1
 x <- dv_set_lineups(x, set_number = 1, 
-                    lineups = list(c(1,4,12,3,6,11), 
-                                   c(67,65,60,70,64,62)), 
+                    lineups = list(c(4,15,7,6,13,17), 
+                                   c(24,3,13,10,25,8)), 
                     setter_positions = c(1, 1))
 
 # Subset the attacks
@@ -58,7 +61,7 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 # Link Youtube video with scout
 dvw <- dir_ls(out, regexp = "dvw$")
 x <- dv_read(dvw)
-dv_meta_video(x) <- "https://youtu.be/9sKfoTSCUf8"
+dv_meta_video(x) <- "https://youtu.be/SxETTklb81Y"
 dv_write(x, dvw)
 file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"), overwrite = TRUE)
 
