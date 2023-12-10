@@ -1,0 +1,170 @@
+---
+date: 12/04/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+# Rotazione partita
+
+```{r}
+library(tidyverse)
+add <- function(x){
+  tmp <- x$lab
+  x |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = tmp[c(2, 3, 4, 5, 6, 1)], 
+                     rot = "R2")) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = tmp[c(3, 4, 5, 6, 1, 2)], 
+                     rot = "R3")) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = tmp[c(4, 5, 6, 1, 2, 3)], 
+                     rot = "R4")) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = tmp[c(5, 6, 1, 2, 3, 4)], 
+                     rot = "R5")) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = tmp[c(6, 1, 2, 3, 4, 5)], 
+                     rot = "R6"))
+}
+
+court_colour <- "white"
+grid_colour <- "black"
+```
+
+### Set 1
+
+```{r}
+#| fig-width: 7
+#| fig-height: 1
+x <- tibble(x = c(3, 3, 2, 1, 1, 2),
+       y = c(1, 2, 2, 2, 1, 1),
+       lab = c(4, 11, 5, 15, 1, 16), 
+       rot = "R1") 
+
+x2 <- add(x)
+
+x2 |> 
+  ggplot(aes(x, y, label = lab)) +
+  annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
+           ymin = 0.5, ymax = 2.5, 
+           fill = court_colour, 
+           colour = "black") +
+  annotate(geom = "rect", xmin = 0.3, xmax = 3.7, 
+                  ymin = 2.48, ymax = 2.6, 
+                  fill = grid_colour) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .5, yend = 2.5,
+           colour = grid_colour) +
+  annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 2.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 1.7, yend = 1.7,
+           colour = grid_colour) +
+  geom_text(size = 3) +
+  theme_void() +
+  facet_grid(cols = vars(rot)) 
+
+```
+
+### Set 2
+
+```{r}
+#| fig-width: 7
+#| fig-height: 1
+x <- tibble(x = c(3, 3, 2, 1, 1, 2),
+       y = c(1, 2, 2, 2, 1, 1),
+       lab = c(4, 15, 3, 6, 12, 2), 
+       rot = "R1") 
+
+x2 <- add(x)
+
+x2 |> 
+  ggplot(aes(x, y, label = lab)) +
+  annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
+           ymin = 0.5, ymax = 2.5, 
+           fill = court_colour, 
+           colour = "black") +
+  annotate(geom = "rect", xmin = 0.3, xmax = 3.7, 
+                  ymin = 2.48, ymax = 2.6, 
+                  fill = grid_colour) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .5, yend = 2.5,
+           colour = grid_colour) +
+  annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 2.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 1.7, yend = 1.7,
+           colour = grid_colour) +
+  geom_text(size = 3) +
+  theme_void() +
+  facet_grid(cols = vars(rot)) 
+
+```
+
+### Set 3
+
+```{r}
+#| fig-width: 7
+#| fig-height: 1
+x <- tibble(x = c(3, 3, 2, 1, 1, 2),
+       y = c(1, 2, 2, 2, 1, 1),
+       lab = c(4,7,6,15,13,17), 
+       rot = "R1") 
+
+x2 <- add(x)
+
+x2 |> 
+  ggplot(aes(x, y, label = lab)) +
+  annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
+           ymin = 0.5, ymax = 2.5, 
+           fill = court_colour, 
+           colour = "black") +
+  annotate(geom = "rect", xmin = 0.3, xmax = 3.7, 
+                  ymin = 2.48, ymax = 2.6, 
+                  fill = grid_colour) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .5, yend = 2.5,
+           colour = grid_colour) +
+  annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 2.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 1.7, yend = 1.7,
+           colour = grid_colour) +
+  geom_text(size = 3) +
+  theme_void() +
+  facet_grid(cols = vars(rot)) 
+
+```
+
+### Elenco atlete
+
+::: grid
+::: g-col-4
+```{r}
+players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE)
+
+players |> 
+  select(cognome, nome, numero) |> 
+  slice(1:7) |> 
+  gt::gt() |> 
+  gt::tab_options(table.font.size = 12)
+
+```
+:::
+
+::: g-col-4
+```{r}
+players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE)
+
+players |> 
+  select(cognome, nome, numero) |> 
+    slice(8:14) |> 
+  gt::gt() |> 
+  gt::tab_options(table.font.size = 12)
+
+```
+:::
+:::

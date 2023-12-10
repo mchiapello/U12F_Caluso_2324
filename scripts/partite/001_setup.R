@@ -9,24 +9,24 @@ source("scripts/999_functions.R")
 
 ###############################################################################
 # Create match/allenamento
-opp <- "PoliVenaria"
+opp <- "AltoCanavese"
 us <- "BCV Caluso"
-date <- "2023-12-02"
+date <- "2023-12-09"
 
 pp <- ma(date = date, 
          opp = opp,
          type = "partita",
-         time = "11:00:00",
+         time = "15:00:00",
          season = "2022-2023",
          league = "U12 - UISP",
          phase = "Andata",
          home_away = TRUE,
-         day_number = 4,
-         match_number = 122112,
+         day_number = 5,
+         match_number = 122113,
          set_won = c(3, 0),
-         home_away_team  = c("a", "*"),
+         home_away_team  = c("*", "a"),
          won_match = c(TRUE, FALSE),
-         coach = c("Chiapello", "Mennaoui"),
+         coach = c("Chiapello", "Abbratejanni"),
          assistent = c("", ""))
 
 # Create variables
