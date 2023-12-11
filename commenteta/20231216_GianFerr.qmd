@@ -1,0 +1,521 @@
+---
+title: "Gianferr - BCV Caluso"
+subtitle: "Ritorno - 2023/12/16"
+format:
+  html:
+    toc: false
+    theme: journal
+    page-layout: custom
+    number-sections: false
+    css: style.css
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+#| include: false
+# Load libraries
+library(tidyverse)
+library(datavolley)
+library(gt)
+library(gtExtras)
+library(patchwork)
+source(paste0(here::here(), "/scripts/999_utils.R"))
+
+# Read data
+file <- fs::dir_ls(paste0(here::here(), "/partite/2023-11-11_GianFerr"), 
+                   regexp = "dvw$")
+x <- dv_read(file)
+noi <- "BCV Caluso"
+loro <- teams(x)[teams(x) != noi]
+px <- plays(x)
+
+################################################################################
+# Functions
+add <- function(x, home = TRUE){
+  tmp <- x$lab
+  if (home == TRUE){
+    x |> 
+      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                       y = c(1, 2, 2, 2, 1, 1),
+                       lab = tmp[c(2, 3, 4, 5, 6, 1)], 
+                       rot = "R2")) |> 
+      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                       y = c(1, 2, 2, 2, 1, 1),
+                       lab = tmp[c(3, 4, 5, 6, 1, 2)], 
+                       rot = "R3")) |> 
+      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                       y = c(1, 2, 2, 2, 1, 1),
+                       lab = tmp[c(4, 5, 6, 1, 2, 3)], 
+                       rot = "R4")) |> 
+      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                       y = c(1, 2, 2, 2, 1, 1),
+                       lab = tmp[c(5, 6, 1, 2, 3, 4)], 
+                       rot = "R5")) |> 
+      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                       y = c(1, 2, 2, 2, 1, 1),
+                       lab = tmp[c(6, 1, 2, 3, 4, 5)], 
+                       rot = "R6"))
+  } else {
+    x |> 
+      bind_rows(tibble(x = c(1,1,2,3,3,2),
+                       y = c(4,3,3,3,4,4),
+                       lab = tmp[c(2, 3, 4, 5, 6, 1)], 
+                       rot = "R2")) |> 
+      bind_rows(tibble(x = c(1,1,2,3,3,2),
+                       y = c(4,3,3,3,4,4),
+                       lab = tmp[c(3, 4, 5, 6, 1, 2)], 
+                       rot = "R3")) |> 
+      bind_rows(tibble(x = c(1,1,2,3,3,2),
+                       y = c(4,3,3,3,4,4),
+                       lab = tmp[c(4, 5, 6, 1, 2, 3)], 
+                       rot = "R4")) |> 
+      bind_rows(tibble(x = c(1,1,2,3,3,2),
+                       y = c(4,3,3,3,4,4),
+                       lab = tmp[c(5, 6, 1, 2, 3, 4)], 
+                       rot = "R5")) |> 
+      bind_rows(tibble(x = c(1,1,2,3,3,2),
+                       y = c(4,3,3,3,4,4),
+                       lab = tmp[c(6, 1, 2, 3, 4, 5)], 
+                       rot = "R6"))
+  }
+}
+```
+
+# Matchup
+
+```{r}
+# Define home and away teams
+home <- x$meta$teams$team[1]
+away <- x$meta$teams$team[2]
+# Define parameters
+court_colour <- "white"
+grid_colour <- "black"
+```
+
+### Set1
+
+```{r}
+if(home == "BCV Caluso"){
+  tmp1 <- x$meta$players_h |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
+  pull(number)
+  caluso <- tibble(x = c(3, 3, 2, 1, 1, 2),
+       y = c(1, 2, 2, 2, 1, 1),
+       lab = tmp1,
+       rot = "R001", 
+       team = home)
+  tmp2 <- x$meta$players_v |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
+  pull(number)
+  others <- tibble(x = c(1,1,2,3,3,2),
+       y = c(4,3,3,3,4,4),
+       lab = tmp2,
+       rot = "R001",
+       team = away)
+} else {
+  tmp1 <- x$meta$players_h |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
+  pull(number)
+  others <- tibble(x = c(1,1,2,3,3,2),
+       y = c(4,3,3,3,4,4),
+       lab = tmp1,
+       rot = "R001",
+       team = away)
+  tmp2 <- x$meta$players_v |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
+  pull(number)  
+  set1hr <- tibble(x = c(3, 3, 2, 1, 1, 2),
+       y = c(1, 2, 2, 2, 1, 1),
+       lab = tmp2,
+       rot = "R001", 
+       team = home)
+}
+
+# caluso <- add(caluso, home = TRUE)
+# others <- add(others, home = FALSE)
+
+ss <- px |> 
+  filter(set_number == "1",
+         skill == "Serve") |> 
+  slice(1) |> 
+  pull(team)
+
+if(ss != "BCV Caluso"){
+  caluso <- caluso |> 
+    mutate(serve = "no")
+  others <- others |> 
+    mutate(serve = "yes")
+  ctmp <- caluso$lab
+  otmp <- others$lab
+  df <- others |> 
+    bind_rows(caluso) |> 
+    bind_rows(others |> 
+                mutate(rot = "R002",
+                       serve= "no",
+                       team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     rot = "R002",
+                     serve = "yes",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     rot = "R003",
+                     serve = "yes",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     rot = "R003",
+                     serve = "no",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     rot = "R004",
+                     serve = "no",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     rot = "R004",
+                     serve = "yes",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     rot = "R005",
+                     serve = "yes",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     rot = "R005",
+                     serve = "no",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     rot = "R006",
+                     serve = "no",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     rot = "R006",
+                     serve = "yes",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     rot = "R007",
+                     serve = "yes",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     rot = "R007",
+                     serve = "no",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     rot = "R008",
+                     serve = "no",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     rot = "R008",
+                     serve = "yes",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     rot = "R009",
+                     serve = "yes",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     rot = "R009",
+                     serve = "no",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     rot = "R010",
+                     serve = "no",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     rot = "R010",
+                     serve = "yes",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     rot = "R011",
+                     serve = "yes",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     rot = "R011",
+                     serve = "no",
+                     team = home)) |> 
+    bind_rows(tibble(x = c(1,1,2,3,3,2),
+                     y = c(4,3,3,3,4,4),
+                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     rot = "R012",
+                     serve = "no",
+                     team = away)) |> 
+    bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
+                     y = c(1, 2, 2, 2, 1, 1),
+                     lab = ctmp[c(1, 2, 3, 4, 5, 6)],
+                     rot = "R012",
+                     serve = "yes",
+                     team = home))
+}
+
+
+df |> 
+  mutate(x2 = case_when(serve == "yes" & team != home ~ 1,
+                        serve == "yes" & team == home ~ 3),
+         y2 = case_when(serve == "yes" & team != home ~ 4.5,
+                        serve == "yes" & team == home ~ .5)) |> 
+  # mutate(reception = ifelse(lab == 11, "# 50%\n+80%", NA),
+  #        coord_X = x - .3,
+  #        coord_Y = y + .5) |>
+  ggplot(aes(x, y, label = lab)) +
+  annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
+           ymin = 0.5, ymax = 4.5, 
+           fill = court_colour, 
+           colour = "black") +
+  annotate(geom = "rect", xmin = 0.3, xmax = 3.7, 
+                  ymin = 2.48, ymax = 2.6, 
+                  fill = grid_colour) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 1.7, yend = 1.7,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 3.3, yend = 3.3,
+         colour = grid_colour) +
+  geom_point(aes(x2, y2), 
+             size = 5) +
+  # geom_text(aes(coord_X, coord_Y, label = reception)) +
+  geom_text(size = 7) +
+  theme_void() +
+  facet_wrap(vars(rot)) 
+  
+
+```
+
+
+
+
+
+
+# Giocatrici pericolose
+
++-------------+---------------------------------------------------------------------+------------------------------------+
+| Giocatrice  | Attacco                                                             | Battuta                            |
++=============+:====================================================================+====================================+
+| Beatrice\   | -   Mancina                                                         | -   Dall'alto                      |
+| Numero: 7   | -   Da prima linea chiude molto soprattutto con palla vicina a rete | -   Non particolarmente pericolosa |
+|             | -   Da seconda linea la palla è sempre molto lunga                  |                                    |
+|             | -   Attacca prevelentemente in diagonale, ma anche in lungo linea   |                                    |
++-------------+---------------------------------------------------------------------+------------------------------------+
+
+# Difesa
+
+Il puntino rosso denota la zona di partenza dell'attacco, mentre l'intensità del colore delle diverse zone del campo indica il maggior numero di attacchi arrivati. Il numero al centro delle diverse zone indica il numero di attacchi arrivati in quel punto del campo.
+
+::: grid
+::: g-col-6
+```{r}
+#| fig-width: 2
+attack_rate <- px %>%
+    dplyr::filter(skill == "Attack",
+                  team != "PGS Foglizzese") %>%
+    filter(grepl("2|3|4", start_zone)) %>% 
+    group_by(team, start_zone, end_zone) %>%
+    dplyr::summarize(n_attacks = n()) %>%
+    mutate(rate = n_attacks/sum(n_attacks)) %>%
+    ungroup %>% 
+    bind_cols(dv_xy(.$start_zone, end = "upper")) %>% 
+    rename(start_x = x, start_y = y) %>% 
+    bind_cols(dv_xy(.$end_zone, end = "lower")) %>% 
+    rename(end_x = x, end_y = y)
+
+# Posto 2
+p1 <- attack_rate %>%
+    filter(start_zone == 2) %>% 
+    ggplot(aes(end_x, end_y)) +
+    geom_tile(aes(fill = rate), show.legend = FALSE) +
+    geom_text(aes(label = n_attacks), size = 2) +
+    scale_fill_gradient2(low = "white",
+                         high = "red",
+                         name = "Scala Intensità") +
+    ggcourt(labels = c("", ""), court = "lower", show_zones = FALSE) +
+    ggforce::geom_circle(aes(x0=1, y0=3.5, r=.1),
+                fill='red', lwd=1, inherit.aes=FALSE) +
+    labs(title = "Attacco da P2") +
+    theme(plot.title = element_text(hjust = .5, size = 4),
+          plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+# Posto 3
+p2 <- attack_rate %>%
+    filter(start_zone == 3) %>% 
+    ggplot(aes(end_x, end_y)) +
+    geom_tile(aes(fill = rate), show.legend = FALSE) +
+    geom_text(aes(label = n_attacks), size = 2) +
+    scale_fill_gradient2(low = "white",
+                         high = "red",
+                         name = "Scala Intensità") +
+    ggcourt(labels = c("", ""), court = "lower", show_zones = FALSE) +
+    ggforce::geom_circle(aes(x0=2, y0=3.5, r=.1),
+                fill='red', lwd=1, inherit.aes=FALSE) +
+    labs(title = "Attacco da P3") +
+    theme(plot.title = element_text(hjust = .5, size = 4),
+          plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+# Posto 4
+p3 <- attack_rate %>%
+    filter(start_zone == 4) %>% 
+    ggplot(aes(end_x, end_y)) +
+    geom_tile(aes(fill = rate), show.legend = FALSE) +
+    geom_text(aes(label = n_attacks), size = 1) +
+    scale_fill_gradient2(low = "white",
+                         high = "red",
+                         name = "Scala Intensità") +
+    ggcourt(labels = c("", ""), court = "lower", show_zones = FALSE) +
+    ggforce::geom_circle(aes(x0=3, y0=3.5, r=.1),
+                fill='red', lwd=1, inherit.aes=FALSE) +
+    labs(title = "Attacco da P4") +
+    theme(plot.title = element_text(hjust = .5, size = 4),
+          plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+pall <- p1 + p2 + p3
+ggsave(pall, file = "test.jpeg", dpi = 300, scale = 1.5)
+tmp <- magick::image_read("test.jpeg")
+fs::file_delete("test.jpeg")
+pall <- magick::image_trim(tmp)
+
+pall
+```
+:::
+
+::: {.g-col-4 .pippo}
+#### Indicazioni
+
+-   Attaccano tutte e da tutte le posizioni (anche P1 con la numero 7 e da P6 con l'ala di seconda linea)
+-   Attaccano tutte (tranne la 7) sulla direzione della rincorsa, quindi piazzare muro li
+-   **Se la 7 è in prima linea, facciamo muro ad opzione su di lei**
+:::
+:::
+
+# Ricezione
+
+L'intensità del colore delle diverse zone del campo indica il maggior numero di attacchi arrivati. Il numero al centro delle diverse zone indica il numero di attacchi arrivati in quel punto del campo.
+
+::: grid
+::: g-col-4
+```{r}
+#| fig-width: 2
+serve_rate <- px %>%
+    dplyr::filter(skill == "Serve",
+                  team != "PGS Foglizzese") %>%
+    group_by(team, end_zone) %>%
+    dplyr::summarize(n_serve = n()) %>%
+    mutate(rate = n_serve/sum(n_serve)) %>%
+    ungroup %>% 
+    bind_cols(dv_xy(.$end_zone, end = "lower")) %>% 
+    rename(end_x = x, end_y = y)
+
+
+pb <- serve_rate %>%
+    ggplot(aes(end_x, end_y)) +
+    geom_tile(aes(fill = rate), show.legend = FALSE) +
+    geom_text(aes(label = n_serve), size = 2) +
+    scale_fill_gradient2(low = "white",
+                         high = "red",
+                         name = "Scala Intensità") +
+    ggcourt(labels = c("", ""), court = "lower", show_zones = FALSE) +
+    theme(plot.title = element_text(hjust = .5, size = 4),
+          plot.margin = unit(c(0, 0, 0, 0), "cm"))
+
+ggsave(pb, file = "test2.jpeg", dpi = 300, scale = 1.5, width = 1.3, height = 1.3, units = "cm")
+tmp <- magick::image_read("test2.jpeg")
+fs::file_delete("test2.jpeg")
+magick::image_trim(tmp)
+
+    
+```
+:::
+
+::: {.g-col-8 .pippo .odd}
+#### Indicazioni
+
+-   Durante la partita di andata battevano un po da sopra e un po da sotto
+-   Nessuna aveva una battuta insidiosa
+-   Su 60 battute:
+    -   4 sono stati Ace
+
+    -   13 sono stati errori
+
+    -   2 non ci hanno permesso di attaccare
+:::
+:::
+
+::: grid
+::: g-col-6
+# Battuta {style=".pluto"}
+
++----------------+---------------------+---------------+
+| Su chi battere | In che zona battere | Chi evitare   |
++================+=====================+===============+
+| -   34 (L)     | -   P1 - P2         | -   6         |
++----------------+---------------------+---------------+
+
+-   Ricevono molto corte, quasi sui 3 metri, quindi battere **lungo**
+
+-   Giocano in penetrazione, quindi cerchiamo la parte sinistra (P1-P2) del loro campo
+:::
+
+::: g-col-6
+# Attacco
+
++------------------+-----------------------+----------------+
+| Su chi attaccare | In che zona attaccare | Chi evitare    |
++==================+=======================+================+
+| -   23 - 45      | -   P8                | -   24         |
++------------------+-----------------------+----------------+
+
+-   Difendono molto corte, quindi **attacchiamo lungo**.
+
+-   Stesso discorso vale per le **FB**, devono essere **negli ultimi 2 m di campo verso P1/P6**
+:::
+:::
+
+::: pippo2
+# Condiderazioni generali
+
+-   Giocano in penetrazione quindi FB sempre sul palleggiatore
+
+-   Il nostro palleggiatore di prima linea dovrebbe chiamare sempre la posizione del palleggiatore del Parella dicendo: "Prima linea" o "seconda linea" in modo che tutti sappiano dove mandare la palla
+
+-   Andiamo a divertirci e vincere la partita, che ce lo meritiamo!!
+:::
