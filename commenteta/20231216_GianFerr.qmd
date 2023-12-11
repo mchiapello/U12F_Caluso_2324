@@ -32,57 +32,6 @@ x <- dv_read(file)
 noi <- "BCV Caluso"
 loro <- teams(x)[teams(x) != noi]
 px <- plays(x)
-
-################################################################################
-# Functions
-add <- function(x, home = TRUE){
-  tmp <- x$lab
-  if (home == TRUE){
-    x |> 
-      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
-                       y = c(1, 2, 2, 2, 1, 1),
-                       lab = tmp[c(2, 3, 4, 5, 6, 1)], 
-                       rot = "R2")) |> 
-      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
-                       y = c(1, 2, 2, 2, 1, 1),
-                       lab = tmp[c(3, 4, 5, 6, 1, 2)], 
-                       rot = "R3")) |> 
-      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
-                       y = c(1, 2, 2, 2, 1, 1),
-                       lab = tmp[c(4, 5, 6, 1, 2, 3)], 
-                       rot = "R4")) |> 
-      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
-                       y = c(1, 2, 2, 2, 1, 1),
-                       lab = tmp[c(5, 6, 1, 2, 3, 4)], 
-                       rot = "R5")) |> 
-      bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
-                       y = c(1, 2, 2, 2, 1, 1),
-                       lab = tmp[c(6, 1, 2, 3, 4, 5)], 
-                       rot = "R6"))
-  } else {
-    x |> 
-      bind_rows(tibble(x = c(1,1,2,3,3,2),
-                       y = c(4,3,3,3,4,4),
-                       lab = tmp[c(2, 3, 4, 5, 6, 1)], 
-                       rot = "R2")) |> 
-      bind_rows(tibble(x = c(1,1,2,3,3,2),
-                       y = c(4,3,3,3,4,4),
-                       lab = tmp[c(3, 4, 5, 6, 1, 2)], 
-                       rot = "R3")) |> 
-      bind_rows(tibble(x = c(1,1,2,3,3,2),
-                       y = c(4,3,3,3,4,4),
-                       lab = tmp[c(4, 5, 6, 1, 2, 3)], 
-                       rot = "R4")) |> 
-      bind_rows(tibble(x = c(1,1,2,3,3,2),
-                       y = c(4,3,3,3,4,4),
-                       lab = tmp[c(5, 6, 1, 2, 3, 4)], 
-                       rot = "R5")) |> 
-      bind_rows(tibble(x = c(1,1,2,3,3,2),
-                       y = c(4,3,3,3,4,4),
-                       lab = tmp[c(6, 1, 2, 3, 4, 5)], 
-                       rot = "R6"))
-  }
-}
 ```
 
 # Matchup
@@ -94,11 +43,55 @@ away <- x$meta$teams$team[2]
 # Define parameters
 court_colour <- "white"
 grid_colour <- "black"
+# Functions
+addP <- function(x, homeT = 11, awayT = 13){
+  x |> 
+    mutate(calP = case_when(home_p1 == homeT ~ "P1",
+                            home_p2 == homeT ~ "P2",
+                            home_p3 == homeT ~ "P3",
+                            home_p4 == homeT ~ "P4",
+                            home_p5 == homeT ~ "P5",
+                            home_p6 == homeT ~ "P6"),
+           othP = case_when(visiting_p1 == awayT ~ "P1",
+                            visiting_p2 == awayT ~ "P2",
+                            visiting_p3 == awayT ~ "P3",
+                            visiting_p4 == awayT ~ "P4",
+                            visiting_p5 == awayT ~ "P5",
+                            visiting_p6 == awayT ~ "P6"))
+}
 ```
 
 ### Set1
 
 ```{r}
+# Stats
+## Who start at service?
+ss <- px |> 
+  filter(set_number == "1",
+         skill == "Serve") |> 
+  slice(1) |> 
+  pull(team)
+
+## Player rotation
+prServe <- px |> 
+  addP(homeT = 11, awayT = 13) |> 
+  filter(set_number == 1,
+         skill == "Serve") |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  count(team, player_number, evaluation2) |> 
+  unite("pippo", evaluation2, n, sep = ":") |> 
+  arrange(player_number, pippo) |> 
+  group_by(player_number, team) |> 
+  reframe(prServe = paste(pippo, collapse="\n")) |> 
+  mutate(prServe = paste0("Serve:\n", prServe),
+         rot2 = "P1", serve = "yes")
+  
+
+
 # Extract rotation---- 
 if(home == "BCV Caluso"){
   tmp1 <- x$meta$players_h |> 
@@ -107,7 +100,7 @@ if(home == "BCV Caluso"){
   pull(number)
   caluso <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = tmp1,
+       player_number = tmp1,
        rot = "R001", 
        team = home)
   tmp2 <- x$meta$players_v |> 
@@ -116,7 +109,7 @@ if(home == "BCV Caluso"){
   pull(number)
   others <- tibble(x = c(1,1,2,3,3,2),
        y = c(4,3,3,3,4,4),
-       lab = tmp2,
+       player_number = tmp2,
        rot = "R001",
        team = away)
 } else {
@@ -126,28 +119,19 @@ if(home == "BCV Caluso"){
   pull(number)
   others <- tibble(x = c(1,1,2,3,3,2),
        y = c(4,3,3,3,4,4),
-       lab = tmp1,
+       player_number = tmp1,
        rot = "R001",
        team = away)
   tmp2 <- x$meta$players_v |> 
   filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
   arrange(starting_position_set1) |> 
   pull(number)  
-  set1hr <- tibble(x = c(3, 3, 2, 1, 1, 2),
+  caluso <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = tmp2,
+       player_number = tmp2,
        rot = "R001", 
        team = home)
 }
-
-# caluso <- add(caluso, home = TRUE)
-# others <- add(others, home = FALSE)
-
-ss <- px |> 
-  filter(set_number == "1",
-         skill == "Serve") |> 
-  slice(1) |> 
-  pull(team)
 
 # Create rotation----
 if(ss != "BCV Caluso"){
@@ -165,127 +149,127 @@ if(ss != "BCV Caluso"){
                        team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R002",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R004",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R004",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R006",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R006",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R008",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R008",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R010",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R010",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R012",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = ctmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R012",
                      serve = "yes",
                      team = home))
@@ -300,133 +284,133 @@ if(ss != "BCV Caluso"){
     bind_rows(caluso) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R002",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = ctmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R002",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R004",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R004",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R006",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R006",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R008",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R008",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R010",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R010",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = otmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R012",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R012",
                      serve = "no",
                      team = home))
@@ -434,14 +418,17 @@ if(ss != "BCV Caluso"){
 
 # Plot----
 df |> 
+  mutate(rot2 = case_when(x == 1 & y == 4 ~ "P1",
+                          x == 3 & y == 1 ~ "P1")) |> 
+  left_join(prServe) |> 
   mutate(x2 = case_when(serve == "yes" & team != home ~ 1,
                         serve == "yes" & team == home ~ 3),
          y2 = case_when(serve == "yes" & team != home ~ 4.5,
                         serve == "yes" & team == home ~ .5)) |> 
-  # mutate(reception = ifelse(lab == 11, "# 50%\n+80%", NA),
-  #        coord_X = x - .3,
-  #        coord_Y = y + .5) |>
-  ggplot(aes(x, y, label = lab)) +
+  mutate(reception = ifelse(player_number == 11, "# 50%\n+80%", NA),
+         coord_X = x - .48,
+         coord_Y = y + .3) |>
+  ggplot(aes(x, y, label = player_number)) +
   annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
            ymin = 0.5, ymax = 4.5, 
            fill = court_colour, 
@@ -453,13 +440,14 @@ df |>
            colour = grid_colour) +
   annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 4.5,
            colour = grid_colour) +
-  annotate("segment", x = .5, xend = 3.5, y = 1.7, yend = 1.7,
+  annotate("segment", x = .5, xend = 3.5, y = 1.5, yend = 1.5,
            colour = grid_colour) +
-  annotate("segment", x = .5, xend = 3.5, y = 3.3, yend = 3.3,
+  annotate("segment", x = .5, xend = 3.5, y = 3.5, yend = 3.5,
          colour = grid_colour) +
   geom_point(aes(x2, y2), 
              size = 5) +
-  # geom_text(aes(coord_X, coord_Y, label = reception)) +
+  geom_text(aes(coord_X, coord_Y, label = prServe), size = 2,
+            lineheight = .6, hjust = 0) +
   geom_text(size = 7) +
   theme_void() +
   facet_wrap(vars(rot)) 
@@ -473,40 +461,40 @@ df |>
 # Extract rotation---- 
 if(home == "BCV Caluso"){
   tmp1 <- x$meta$players_h |> 
-  filter(starting_position_set2 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set2) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)
   caluso <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = tmp1,
+       player_number = tmp1,
        rot = "R001", 
        team = home)
   tmp2 <- x$meta$players_v |> 
-  filter(starting_position_set2 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set2) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)
   others <- tibble(x = c(1,1,2,3,3,2),
        y = c(4,3,3,3,4,4),
-       lab = tmp2,
+       player_number = tmp2,
        rot = "R001",
        team = away)
 } else {
   tmp1 <- x$meta$players_h |> 
-  filter(starting_position_set2 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set2) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)
   others <- tibble(x = c(1,1,2,3,3,2),
        y = c(4,3,3,3,4,4),
-       lab = tmp1,
+       player_number = tmp1,
        rot = "R001",
        team = away)
   tmp2 <- x$meta$players_v |> 
-  filter(starting_position_set2 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set2) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)  
-  set1hr <- tibble(x = c(3, 3, 2, 1, 1, 2),
+  caluso <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = tmp2,
+       player_number = tmp2,
        rot = "R001", 
        team = home)
 }
@@ -523,8 +511,8 @@ if(ss != "BCV Caluso"){
     mutate(serve = "no")
   others <- others |> 
     mutate(serve = "yes")
-  ctmp <- caluso$lab
-  otmp <- others$lab
+  ctmp <- caluso$player_number
+  otmp <- others$player_number
   df <- others |> 
     bind_rows(caluso) |> 
     bind_rows(others |> 
@@ -533,127 +521,127 @@ if(ss != "BCV Caluso"){
                        team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R002",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R004",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R004",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R006",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R006",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R008",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R008",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R010",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R010",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R012",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = ctmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R012",
                      serve = "yes",
                      team = home))
@@ -668,133 +656,133 @@ if(ss != "BCV Caluso"){
     bind_rows(caluso) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R002",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = ctmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R002",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R004",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R004",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R006",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R006",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R008",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R008",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R010",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R010",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = otmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R012",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R012",
                      serve = "no",
                      team = home))
@@ -807,7 +795,7 @@ df |>
                         serve == "yes" & team == home ~ 3),
          y2 = case_when(serve == "yes" & team != home ~ 4.5,
                         serve == "yes" & team == home ~ .5)) |> 
-  # mutate(reception = ifelse(lab == 11, "# 50%\n+80%", NA),
+  # mutate(reception = ifelse(player_number == 11, "# 50%\n+80%", NA),
   #        coord_X = x - .3,
   #        coord_Y = y + .5) |>
   ggplot(aes(x, y, label = lab)) +
@@ -840,45 +828,43 @@ df |>
 ### Set3
 
 ```{r}
-
 # Extract rotation---- 
-
 if(home == "BCV Caluso"){
   tmp1 <- x$meta$players_h |> 
-  filter(starting_position_set3 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set3) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)
   caluso <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = tmp1,
+       player_number = tmp1,
        rot = "R001", 
        team = home)
   tmp2 <- x$meta$players_v |> 
-  filter(starting_position_set3 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set3) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)
   others <- tibble(x = c(1,1,2,3,3,2),
        y = c(4,3,3,3,4,4),
-       lab = tmp2,
+       player_number = tmp2,
        rot = "R001",
        team = away)
 } else {
   tmp1 <- x$meta$players_h |> 
-  filter(starting_position_set3 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set3) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)
   others <- tibble(x = c(1,1,2,3,3,2),
        y = c(4,3,3,3,4,4),
-       lab = tmp1,
+       player_number = tmp1,
        rot = "R001",
        team = away)
   tmp2 <- x$meta$players_v |> 
-  filter(starting_position_set3 %in% c(1,2,3,4,5,6)) |> 
-  arrange(starting_position_set3) |> 
+  filter(starting_position_set1 %in% c(1,2,3,4,5,6)) |> 
+  arrange(starting_position_set1) |> 
   pull(number)  
-  set1hr <- tibble(x = c(3, 3, 2, 1, 1, 2),
+  caluso <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = tmp2,
+       player_number = tmp2,
        rot = "R001", 
        team = home)
 }
@@ -896,8 +882,8 @@ if(ss != "BCV Caluso"){
     mutate(serve = "no")
   others <- others |> 
     mutate(serve = "yes")
-  ctmp <- caluso$lab
-  otmp <- others$lab
+  ctmp <- caluso$player_number
+  otmp <- others$player_number
   df <- others |> 
     bind_rows(caluso) |> 
     bind_rows(others |> 
@@ -906,127 +892,127 @@ if(ss != "BCV Caluso"){
                        team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R002",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R004",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R004",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R006",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R006",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R008",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R008",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R010",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R010",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R012",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = ctmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R012",
                      serve = "yes",
                      team = home))
@@ -1035,139 +1021,139 @@ if(ss != "BCV Caluso"){
     mutate(serve = "yes")
   others <- others |> 
     mutate(serve = "no")
-  ctmp <- caluso$lab
-  otmp <- others$lab
+  ctmp <- caluso$player_number
+  otmp <- others$player_number
   df <- others |> 
     bind_rows(caluso) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R002",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = ctmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R002",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = otmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R003",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R004",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(2, 3, 4, 5, 6, 1)],
+                     player_number = ctmp[c(2, 3, 4, 5, 6, 1)],
                      rot = "R004",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = otmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R005",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R006",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(3, 4, 5, 6, 1, 2)],
+                     player_number = ctmp[c(3, 4, 5, 6, 1, 2)],
                      rot = "R006",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = otmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R007",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R008",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(4, 5, 6, 1, 2, 3)],
+                     player_number = ctmp[c(4, 5, 6, 1, 2, 3)],
                      rot = "R008",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = otmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R009",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R010",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(5, 6, 1, 2, 3, 4)],
+                     player_number = ctmp[c(5, 6, 1, 2, 3, 4)],
                      rot = "R010",
                      serve = "no",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = otmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "no",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R011",
                      serve = "yes",
                      team = home)) |> 
     bind_rows(tibble(x = c(1,1,2,3,3,2),
                      y = c(4,3,3,3,4,4),
-                     lab = otmp[c(1, 2, 3, 4, 5, 6)],
+                     player_number = otmp[c(1, 2, 3, 4, 5, 6)],
                      rot = "R012",
                      serve = "yes",
                      team = away)) |> 
     bind_rows(tibble(x = c(3, 3, 2, 1, 1, 2),
                      y = c(1, 2, 2, 2, 1, 1),
-                     lab = ctmp[c(6, 1, 2, 3, 4, 5)],
+                     player_number = ctmp[c(6, 1, 2, 3, 4, 5)],
                      rot = "R012",
                      serve = "no",
                      team = home))
@@ -1179,7 +1165,7 @@ df |>
                         serve == "yes" & team == home ~ 3),
          y2 = case_when(serve == "yes" & team != home ~ 4.5,
                         serve == "yes" & team == home ~ .5)) |> 
-  # mutate(reception = ifelse(lab == 11, "# 50%\n+80%", NA),
+  # mutate(reception = ifelse(player_number == 11, "# 50%\n+80%", NA),
   #        coord_X = x - .3,
   #        coord_Y = y + .5) |>
   ggplot(aes(x, y, label = lab)) +
