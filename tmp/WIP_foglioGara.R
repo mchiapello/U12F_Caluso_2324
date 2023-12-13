@@ -51,9 +51,9 @@ recep <- function(x, squadra = noi, set = 1){
                                                      "Negative, limited attack") ~ "Negative",
                                    evaluation == "Perfect pass" ~ "Perfect",
                                    TRUE ~ evaluation)) |> 
-    count(player_number, evaluation2, Position) |> 
+    count(player_number, evaluation2, Position, team) |> 
     unite("prReception", evaluation2, n, sep = ":") |> 
-    group_by(player_number, Position) |> 
+    group_by(player_number, Position, team) |> 
     summarise(prReception = paste(prReception, collapse = "\n"))
     if(squadra == "BCV Caluso"){
       tmp |> 
@@ -138,3 +138,48 @@ df |>
   geom_text(size = 7) +
   theme_void() +
   facet_wrap(vars(rot)) 
+
+
+
+px |> 
+  filter(team == loro,
+         # player_number == 21,
+         skill == "Serve",
+         set_number == 3) |> 
+  # mutate(y = dv_flip_y(end_coordinate_y)) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+                 xend = end_coordinate_x, yend = end_coordinate_y, colour = evaluation)) +
+           geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+           scale_colour_manual(values = c(Ace = "limegreen", Error = "firebrick", Other = "dodgerblue"),
+                               name = "Evaluation") +
+           ggcourt(labels = "") +
+  facet_wrap(vars(player_number))
+        
+
+px |> 
+  filter(team == loro,
+         skill == "Reception",
+         player_number != 0) |>
+  filter(evaluation == "Error") |> 
+  # count(evaluation) |> 
+  ggplot(aes(end_coordinate_x, end_coordinate_y, label = player_number)) +
+  geom_point()+
+  ggrepel::geom_text_repel() +
+  ggcourt(labels = "")
+
+
+
+
+
+px |> 
+  filter(team == loro,
+         # player_number == 7,
+         skill == "Serve",
+         set_number == 1) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y, colour = evaluation)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+  scale_colour_manual(values = c(Ace = "limegreen", Error = "firebrick", Other = "dodgerblue"),
+                      name = "Evaluation") +
+  ggcourt(labels = "") +
+  facet_wrap(vars(player_number))
