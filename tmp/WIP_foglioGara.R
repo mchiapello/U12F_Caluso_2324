@@ -175,7 +175,7 @@ px |>
   filter(team == loro,
          # player_number == 7,
          skill == "Serve",
-         set_number == 1) |> 
+         set_number == 3) |> 
   ggplot(aes(start_coordinate_x, start_coordinate_y,
              xend = end_coordinate_x, yend = end_coordinate_y, colour = evaluation)) +
   geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
@@ -183,3 +183,142 @@ px |>
                       name = "Evaluation") +
   ggcourt(labels = "") +
   facet_wrap(vars(player_number))
+
+
+
+flip <- px |> 
+  filter(team == noi,
+         skill == "Serve",
+         set_number == 3) |> 
+  select(team, player_number, evaluation, starts_with("start"), starts_with("end"),
+         ends_with("start_of_point")) |> 
+  rowwise() |> 
+  mutate(Point = max(home_score_start_of_point, visiting_score_start_of_point))
+
+toflip <- which(flip$start_coordinate_y > 3.5)
+
+flip[toflip, ] <- flip[toflip, ] %>%
+  mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
+         across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
+
+flip |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y, colour = evaluation)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+  scale_colour_manual(values = c(Ace = "limegreen", Error = "firebrick", Other = "dodgerblue"),
+                      name = "Evaluation") +
+  ggcourt(labels = "") +
+  facet_wrap(vars(player_number))
+
+
+
+
+################################################################################
+# Direzione battute
+flip <- px |> 
+  filter(team == loro,
+         # set_number == 1,
+         skill == "Serve")
+
+toflip <- which(flip$start_coordinate_y < 3.5)
+
+flip[toflip, ] <- flip[toflip, ] %>%
+  mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
+         across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
+
+flip |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y, linetype = evaluation2)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+  scale_colour_manual(values = c(Ace = "darkgreen", Error = "firebrick", 
+                                 Positive = "lightgreen", Negative = "orange"),
+                      name = "Evaluation") +
+  ggcourt(labels = "") +
+  facet_wrap(vars(player_number))
+
+################################################################################
+# Starting 6
+df1 |> 
+  filter(rot =="R001") |> 
+  mutate(rot2 = case_when(x == 1 & y == 4 ~ "P1",
+                          x == 1 & y == 3 ~ "P2",
+                          x == 2 & y == 3 ~ "P3",
+                          x == 3 & y == 3 ~ "P4",
+                          x == 3 & y == 4 ~ "P5",
+                          x == 2 & y == 4 ~ "P6",
+                          x == 3 & y == 1 ~ "P1",
+                          x == 3 & y == 2 ~ "P2",
+                          x == 2 & y == 2 ~ "P3",
+                          x == 1 & y == 2 ~ "P4",
+                          x == 1 & y == 1 ~ "P5",
+                          x == 2 & y == 1 ~ "P6")) |> 
+  mutate(x2 = case_when(serve == "yes" & team != home ~ 1,
+                        serve == "yes" & team == home ~ 3),
+         y2 = case_when(serve == "yes" & team != home ~ 4.5,
+                        serve == "yes" & team == home ~ .5)) |> 
+  ggplot(aes(x, y, label = player_number)) +
+  annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
+           ymin = 0.5, ymax = 4.5, 
+           fill = court_colour, 
+           colour = "black") +
+  annotate(geom = "rect", xmin = 0.3, xmax = 3.7, 
+           ymin = 2.48, ymax = 2.6, 
+           fill = grid_colour) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 1.5, yend = 1.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 3.5, yend = 3.5,
+           colour = grid_colour) +
+  geom_point(aes(x2, y2), 
+             size = 5) +
+  geom_text(size = 7) +
+  theme_void() +
+  facet_wrap(vars(rot)) 
+
+df2 |> 
+  filter(rot =="R001") |> 
+  mutate(rot2 = case_when(x == 1 & y == 4 ~ "P1",
+                          x == 1 & y == 3 ~ "P2",
+                          x == 2 & y == 3 ~ "P3",
+                          x == 3 & y == 3 ~ "P4",
+                          x == 3 & y == 4 ~ "P5",
+                          x == 2 & y == 4 ~ "P6",
+                          x == 3 & y == 1 ~ "P1",
+                          x == 3 & y == 2 ~ "P2",
+                          x == 2 & y == 2 ~ "P3",
+                          x == 1 & y == 2 ~ "P4",
+                          x == 1 & y == 1 ~ "P5",
+                          x == 2 & y == 1 ~ "P6")) |> 
+  mutate(x2 = case_when(serve == "yes" & team != home ~ 1,
+                        serve == "yes" & team == home ~ 3),
+         y2 = case_when(serve == "yes" & team != home ~ 4.5,
+                        serve == "yes" & team == home ~ .5)) |> 
+  ggplot(aes(x, y, label = player_number)) +
+  annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
+           ymin = 0.5, ymax = 4.5, 
+           fill = court_colour, 
+           colour = "black") +
+  annotate(geom = "rect", xmin = 0.3, xmax = 3.7, 
+           ymin = 2.48, ymax = 2.6, 
+           fill = grid_colour) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 1.5, yend = 1.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 3.5, yend = 3.5,
+           colour = grid_colour) +
+  geom_point(aes(x2, y2), 
+             size = 5) +
+  geom_text(size = 7) +
+  theme_void() +
+  facet_wrap(vars(rot)) 
