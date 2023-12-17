@@ -16,8 +16,8 @@ x <- dv_create(match = match,
                players_h = readRDS(paste0(out, "/BCV Caluso.RDS")), #1
                players_v = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS"))) #1
 #2
-# teams <- teams |>
-#   arrange(home_away_team)
+teams <- teams |>
+  arrange(home_away_team)
 x$meta$teams <- teams
 
 ## Court ref

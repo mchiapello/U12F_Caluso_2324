@@ -1,0 +1,19 @@
+---
+title: "BCV Caluso - GianFer"
+date: 11/11/2023
+categories: ['U12F', '2023-2024', 'Primo Campionato', 'Andata']
+format:
+  html:
+    toc: false
+    theme: journal
+    page-layout: article
+    number-sections: false
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+Il video della partita è stato registrato male, mancano 3 metri del campo vicino alla telecamera. Non sono riuscito a fare lo scout!
+
+{{< video https://youtu.be/yG8tK1vycRs >}}
