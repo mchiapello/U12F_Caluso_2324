@@ -1,0 +1,23 @@
+---
+date: 12/21/2023
+categories: ['U12F', '2023-2024', 'In-season']
+params:
+  palestra: 'Arè'
+  date: '21/12/2023'
+  allenamento: '23'
+  assenti: ['Gillone', 'Deluca']
+  vincitori: ['']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.8
+  voto: 0.8
+  url: NA
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Torneo di Natale
+{{< include ../../_contents/_allenamento.qmd >}}
