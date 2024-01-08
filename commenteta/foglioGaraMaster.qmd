@@ -733,51 +733,41 @@ mc_reception(x, noi, by = "both") |> filter(set_number == 3)
 
 ## Dove battere
 
-### Zona del campo
 
-```{r}
-#| fig-asp: .5
-#| fig-width: 10
-s1 <- px |> 
-  filter(team == noi, skill == "Serve", evaluation != "Error") |> 
-  mutate(evaluation2 = case_when(evaluation %in% c("Negative, opponent free attack",
-                                                   "OK, no first tempo possible") ~ "Negative",
-                                 evaluation %in% c("Positive, no attack",
-                                                   "Positive, opponent some attack") ~ "Positive",
-                                 TRUE ~ evaluation)) |> 
-  group_by(team, end_zone, evaluation2)  |> 
-  dplyr::summarize(n_serve = n()) |> 
-  mutate(rate = n_serve/sum(n_serve))  |> 
-  drop_na() |> 
-  ungroup()
-
-## add x, y coordinates associated with the zones
-s1 <- cbind(s1, dv_xy(s1$end_zone, end = "lower"))
-
-s1 |> 
-  ggplot(aes(x, y, fill = rate)) +
-  geom_tile() +
-  ggcourt(labels = "", court = "lower") +
-  scale_fill_gradient2(low = "white",
-                       high = "black",
-                       name = "Scala Intensità") +
-  annotate(geom = "text", x = 2, y = 0, label = loro, size = 7) +
-  theme(plot.title = element_text(hjust = .5, size = 40),
-        plot.subtitle = element_text(hjust = .5, size = 30)) +
-  facet_wrap(vars(evaluation2))
-
-ace <- plays(x) |> 
-  dplyr::filter(!is.na(skill) & !skill %in% c("Timeout", "Technical timeout") & !is.na(video_time)) |> 
-  dplyr::filter(skill == "Reception", team == loro, evaluation %in% c("Error", "Negative, limited attack")) |> 
-  count(player_number, player_name) |> 
-  arrange(desc(n)) |> 
-  slice_head(n = 3) |> 
-  pull(player_number) |> 
-  paste0(collapse = ", ")
-```
 
 ### Peggiori ricevitori
 
 `r ace`
 
 ### Direzioni di battuta
+```{r}
+################################################################################
+# Direzione battute
+flip <- plays(x) |> 
+  filter(team == loro,
+         # set_number == 1,
+         skill == "Serve")
+
+toflip <- which(flip$start_coordinate_y < 3.5)
+
+flip[toflip, ] <- flip[toflip, ] %>%
+  mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
+         across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
+
+flip |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y, linetype = evaluation2)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+  scale_colour_manual(values = c(Ace = "darkgreen", Error = "firebrick", 
+                                 Positive = "lightgreen", Negative = "orange"),
+                      name = "Evaluation") +
+  ggcourt(labels = "") +
+  facet_wrap(vars(player_number))
+
+```
+
