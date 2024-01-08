@@ -1,0 +1,25 @@
+---
+date: 12/28/2023
+categories: ['U12F', '2023-2024', 'In-season']
+params:
+  palestra: 'Arè'
+  date: '28/12/2023'
+  allenamento: '24'
+  assenti: ['Cireddu', 'Budau', 'Mauro', 'Torchia']
+  vincitori: ['Panetto', 'Gillone', 'DeLuca']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.8
+  voto: 0.8
+  url: NA
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Battuta + Ricezione
+{{< include ../../_contents/_allenamento.qmd >}}
+`r me <- 12`
+{{< include ../../_contents/_mese.qmd >}}
