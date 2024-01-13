@@ -28,11 +28,11 @@ add <- function(x, N = 1){
 
 x1 <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(4,6,16,15,5,13), 
+       lab = c(4,6,16,15,5,3), 
        rot = "R1") 
 x2 <- tibble(x = c(3, 3, 2, 1, 1, 2),
              y = c(1, 2, 2, 2, 1, 1),
-             lab = c(4,15,17,6,1,11), 
+             lab = c(4,15,17,6,13,11), 
              rot = "R1") 
 x3 <- tibble(x = c(3, 3, 2, 1, 1, 2),
              y = c(1, 2, 2, 2, 1, 1),
@@ -102,8 +102,8 @@ p3 <- set3 |>
   labs(title = "SET 3") +
   facet_wrap(vars(rot)) 
 
-library(patchwork)
-p1 / p2 / p3
+# library(patchwork)
+# p1 / p2 / p3
 
 
 set1 |> 
