@@ -144,7 +144,8 @@ x2 |>
 ::: grid
 ::: g-col-4
 ```{r}
-players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE)
+players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE) |> 
+  arrange(numero)
 
 players |> 
   select(cognome, nome, numero) |> 

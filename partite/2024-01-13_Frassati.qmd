@@ -441,7 +441,7 @@ p1 + p3
 t1 <- x$meta$players_h %>% 
     select(number, name, starting_position_set1:starting_position_set5) %>% 
     select(where(~sum(!is.na(.x)) > 0)) %>% 
-    rename_with(~str_remove(.x, "starting_position_"))
+    rename_with(~str_remove(.x, "starting_position_")) 
 
 #####################
 # POINTS
@@ -469,6 +469,9 @@ t1 %>%
                   dplyr::select(player_id, player_name) %>% 
                   filter(!is.na(player_id)) %>% 
                   distinct(), by = c("name" = "player_name")) %>% 
+    bind_rows(tibble(number = NA,
+                     name = "Team total",
+                     player_id = "Team total")) |> 
     left_join(t3, by = "player_id") %>% 
     left_join(t5, by = "player_id") %>%
     left_join(t7, by = "player_id") %>%
@@ -476,10 +479,10 @@ t1 %>%
     left_join(t11, by = "player_id") %>%
     left_join(t13, by = "player_id") %>%
     select(-player_id) %>% 
+    filter(!is.na(Tot.x)) %>% 
     mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
     mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
     mutate(across(where(is.character), ~replace_na(.x, "0"))) %>% 
-    filter(if_any(starts_with("set"), ~ . != "-")) %>% 
     ### GT TABLE
     gt(id = "four") %>%
     # tab_header(
@@ -595,6 +598,9 @@ t1 %>%
                   dplyr::select(player_id, player_name) %>% 
                   filter(!is.na(player_id)) %>% 
                   distinct(), by = c("name" = "player_name")) %>% 
+    bind_rows(tibble(number = NA,
+                     name = "Team total",
+                     player_id = "Team total")) |> 
     left_join(t3, by = "player_id") %>% 
     left_join(t5, by = "player_id") %>%
     left_join(t7, by = "player_id") %>%
@@ -602,10 +608,10 @@ t1 %>%
     left_join(t11, by = "player_id") %>%
     left_join(t13, by = "player_id") %>%
     select(-player_id) %>% 
+    filter(!is.na(Tot.x)) %>% 
     mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
     mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
     mutate(across(where(is.character), ~replace_na(.x, "0"))) %>% 
-    filter(if_any(starts_with("set"), ~ . != "-")) %>% 
     ### GT TABLE
     gt(id = "four") %>%
     # tab_header(
