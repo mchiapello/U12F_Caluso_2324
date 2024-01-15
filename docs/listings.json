@@ -2,12 +2,14 @@
   {
     "listing": "/partite.html",
     "items": [
+      "/partite/2024-01-13_Frassati/scoutMaster.html",
       "/partite/2023-12-09_AltoCanavese.html",
       "/partite/2023-12-02_PoliVenaria.html",
       "/partite/2023-11-25_Vela.html",
       "/partite/2023-11-17_Frassati.html",
       "/partite/2023-11-11_GianFerr_v2.html",
-      "/partite/2023-12-16_GianFerr.html"
+      "/partite/2023-12-16_GianFerr.html",
+      "/partite/2024-01-13_Frassati.html"
     ]
   },
   {
@@ -45,6 +47,7 @@
     "listing": "/ct.html",
     "items": [
       "/commenteta/20231216_GianFerr.html",
+      "/commenteta/foglioGaraMaster.html",
       "/commenteta/20231125_Vela.html"
     ]
   }
