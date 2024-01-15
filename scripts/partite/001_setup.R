@@ -21,12 +21,12 @@ pp <- ma(date = date,
          league = "U12 - UISP",
          phase = "Ritorno",
          home_away = TRUE,
-         day_number = 6,
-         match_number = 122114,
-         set_won = c(1, 2),
-         home_away_team  = c("a", "*"),
-         won_match = c(FALSE, TRUE),
-         coach = c("Chiapello", "Ferrando"),
+         day_number = 7,
+         match_number = 122121,
+         set_won = c(2, 0),
+         home_away_team  = c("*", "a"),
+         won_match = c(TRUE, FALSE),
+         coach = c("Chiapello", "Muscarà"),
          assistent = c("", ""))
 
 # Create variables
