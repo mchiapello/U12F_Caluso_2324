@@ -16,8 +16,8 @@ x <- dv_create(match = match,
                players_h = readRDS(paste0(out, "/BCV Caluso.RDS")), #1
                players_v = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS"))) #1
 #2
-teams <- teams |>
-  arrange(home_away_team)
+# teams <- teams |>
+#   arrange(home_away_team)
 x$meta$teams <- teams
 
 ## Court ref
@@ -26,8 +26,8 @@ saveRDS(refx, paste0(out, "/mrefx.RDS"))
 
 ## enter the team lineups for set 1
 x <- dv_set_lineups(x, set_number = 1, 
-                    lineups = list(c(16,4,11,5,15,1), 
-                                   c(36,19,41,20,9,42)), 
+                    lineups = list(c(4,6,16,15,5,3), 
+                                   c(8,24,1,57,7,13)), 
                     setter_positions = c(1, 1))
 
 # Subset the attacks
@@ -61,7 +61,7 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 # Link Youtube video with scout
 dvw <- dir_ls(out, regexp = "dvw$")
 x <- dv_read(dvw)
-dv_meta_video(x) <- "https://youtu.be/SxETTklb81Y"
+dv_meta_video(x) <- "https://youtu.be/5v8oUCb_4q4"
 dv_write(x, dvw)
 file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"), overwrite = TRUE)
 

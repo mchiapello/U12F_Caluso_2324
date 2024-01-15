@@ -8,7 +8,7 @@ ovva_shiny(data_path = c(#allenamenti = "data/000_allenamenti/all/",
 
 library(shiny)
 library(ovideo)
-playlist <- readr::read_csv(fs::dir_ls("partite/2023-12-02_PoliVenaria/playlist/", regex = "csv"))
+playlist <- readr::read_csv(fs::dir_ls("partite/2024-01-13_Frassati/playlist/", regex = "csv"))
 
 shinyApp(
   ui = fluidPage(
