@@ -1,6 +1,6 @@
 ---
 title: "Foglio Gara: BCV Caluso - VeLa"
-date: 01/13/2023
+date: 01/20/2023
 categories: ['U12F', '2023-2024', 'Primo Campionato', 'Ritorno']
 format:
   html:
@@ -23,6 +23,7 @@ library(gtExtras)
 library(patchwork)
 library(volleyreport)
 library(patchwork)
+library(epoxy)
 source(paste0(here::here(), "/scripts/999_utils.R"))
 # Read data
 file <- fs::dir_ls(paste0(here::here(), "/partite/2023-11-25_Vela"), 
@@ -74,6 +75,8 @@ matchup <- function(x, set){
 ## Match up
 
 ```{r}
+#| fig-width: 10
+#| fig-height: 4
 if(which(x$meta$teams$team == noi) == 1){
     loc <- "home"
   } else {
@@ -82,9 +85,7 @@ if(which(x$meta$teams$team == noi) == 1){
 tmp1 <- matchup(x, 1)
 tmp2 <- matchup(x, 2)
 tmp3 <- matchup(x, 3)
-```
 
-```{r}
 grid_colour <- "black"
 p1 <- tmp1 |> 
   ggplot(aes(x, y)) +
@@ -617,7 +618,7 @@ t1 %>%
         Punto = html("Pts")) %>% 
     cols_align(
     align = "center") %>% 
-    tab_options(table.width = px(700),
+    tab_options(table.width = px(900),
                 row.striping.include_table_body = TRUE) %>% 
     tab_style(style = cell_borders(sides = "left",
                                    color = "grey50",
@@ -659,10 +660,28 @@ t1 %>%
 
 ```
 
+<br>
+<br>
+<br>
 
 # Battuta
 
+### Migliori battitori
 
+```{r}
+mb <- vr_serve(x, by = "player", team_select = loro) |> 
+  mutate(Rate = (Pos + Pts) / Tot) |> 
+  arrange(desc(Rate)) |> 
+  filter(player_id != "Team total") |> 
+  slice_head(n = 3) |> 
+  left_join(px, by = "player_id") |> 
+  pull(player_number) |> 
+  unique()
+```
+
+```{epoxy, .transformer = epoxy_transform("collapse")}
+Facciamo attenzione a {mb&}.
+```
 
 ### Peggiori ricevitori
 
@@ -676,7 +695,9 @@ pr <- vr_reception(x, by = "player", team_select = loro) |>
   unique()
 ```
 
-Cerchiamo di battere su: `r pr`
+```{epoxy, .transformer = epoxy_transform("collapse")}
+Cerchiamo di battere su: {pr&}.
+```
 
 ### Direzioni di battuta
 ```{r}
