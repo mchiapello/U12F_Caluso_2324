@@ -15,7 +15,7 @@ px <- do.call(rbind, px)
 px %>% 
   count(match_id)
 
-team_select = "BCV Caluso"
+team_select <- "BCV Caluso"
 pp <- px %>% 
   left_join(px %>% 
               mutate(time = str_sub(as.character(time), start = 1L, end = 10L)) %>% 
@@ -320,6 +320,82 @@ px |>
   geom_point(size = .3) +
   scale_color_identity("Legend", guide = "legend", label = c("Ace", "Error", "Positive", "Negative")) +
   facet_wrap(vars(player_name), scales = "free")
+
+
+
+
+################################################################################
+# Reception performance
+noi <- "BCV Caluso"
+
+s1 <- px %>% 
+  mutate(time2 = lubridate::ymd(str_sub(time, 1L, 10L))) |> 
+  group_by(match_id, time2) |> 
+  nest()
+
+x <- s1$data[[1]]
+
+recep <- function(x){
+  point <- x |> 
+    filter(team == noi,
+           point_won_by == noi,
+           skill == "Reception") |> 
+    count(team, skill)
+  tmp <- x |> 
+    filter(team == noi,
+           skill == "Reception") |> 
+    count(evaluation)
+  tibble(Performance = c("Error rate", "Perfect-Positive pass", "Pass efficiency",
+                         "Sideout rate"),
+         Values = NA) |> 
+    mutate(Values = case_when(Performance == "Error rate" ~ tmp |> 
+                                filter(evaluation == "Error") |> 
+                                pull(n) / sum(tmp$n),
+                              Performance == "Perfect-Positive pass" ~ tmp |> 
+                                filter(evaluation %in% c("OK, no first tempo possible",
+                                                         "Perfect pass",
+                                                         "Positive, attack")) |> 
+                                pull(n) |> sum() / sum(tmp$n),
+                              Performance == "Pass efficiency" ~ ((tmp |> 
+                                filter(evaluation %in% c("OK, no first tempo possible",
+                                                         "Perfect pass",
+                                                         "Positive, attack")) |> 
+                                pull(n) |> sum()) - (tmp |> 
+                                                       filter(evaluation %in% c("Error")) |> 
+                                                       pull(n) |> sum())) / sum(tmp$n),
+                              Performance == "Sideout rate" ~ point$n / sum(tmp$n)))
+}
+
+library(ggpmisc)
+
+s1 |> 
+  mutate(Reception = map(data, recep)) |> 
+  unnest(Reception) |> 
+  ggplot(aes(x = time2, y = Values)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(vars(Performance)) +
+  geom_smooth(method = lm) +
+  scale_x_date(date_minor_breaks = "1 week", date_labels = "%Y %b %d", date_breaks = "1 week") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = .5)) +
+  labs(x = "",
+       y = "Rates")
+
+s1 |> 
+  mutate(Reception = map(data, recep)) |> 
+  unnest(Reception) |> 
+  ggplot(aes(x = time2, y = Values)) +
+  stat_poly_line() +
+  stat_poly_eq(use_label("eq")) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(vars(Performance)) +
+  scale_x_date(date_minor_breaks = "1 week", date_labels = "%Y %b %d", date_breaks = "1 week") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = .5)) +
+  labs(x = "",
+       y = "Rates")
 
 
 
