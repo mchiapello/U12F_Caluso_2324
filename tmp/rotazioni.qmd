@@ -1,6 +1,6 @@
 ---
-date: 12/04/2023
-categories: ['U12F', '2023-2024', 'Pre-season']
+date: 01/18/2024
+categories: ['U12F', '2023-2024', 'Ritorno']
 execute:
   echo: false
   warning: false
@@ -47,7 +47,7 @@ grid_colour <- "black"
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(4, 11, 5, 15, 1, 16), 
+       lab = c(4, 6,16,15,12,7), 
        rot = "R1") 
 
 x2 <- add(x)
@@ -80,7 +80,7 @@ x2 |>
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(4, 15, 3, 6, 12, 2), 
+       lab = c(4,15,17,6,8,1), 
        rot = "R1") 
 
 x2 <- add(x)
@@ -113,7 +113,7 @@ x2 |>
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(4,7,6,15,13,17), 
+       lab = c(4,2,15,6,5,11), 
        rot = "R1") 
 
 x2 <- add(x)

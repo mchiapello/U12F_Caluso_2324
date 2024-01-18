@@ -1,0 +1,21 @@
+---
+title: PIPPO
+date: 12/04/2023
+categories: ['U12F', '2023-2024', 'Pre-season']
+format: 
+  html: 
+    template: mytemplate.html
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+
+| fruit  | price  | Marco  |
+|--------|--------|--------|
+| apple  | 2.05   | 5|
+| pear   | 1.37   |10|
+| orange | 3.09   |15|
+
+: Fruit prices {tbl-colwidths="[25,5,5]"}
