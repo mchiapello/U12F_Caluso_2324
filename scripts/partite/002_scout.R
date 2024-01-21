@@ -13,8 +13,8 @@ elat(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".csv"),
 # Ricordarsi di assegnare correttamente squadre in casa e fuori casa => 2 punti da cambiare
 x <- dv_create(match = match, 
                teams = teams, 
-               players_h = readRDS(paste0(out, "/BCV Caluso.RDS")), #1
-               players_v = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS"))) #1
+               players_v = readRDS(paste0(out, "/BCV Caluso.RDS")), #1
+               players_h = readRDS(paste0(out, "/", teams$team[teams$team != "BCV Caluso"], ".RDS"))) #1
 #2
 # teams <- teams |>
 #   arrange(home_away_team)
@@ -26,8 +26,8 @@ saveRDS(refx, paste0(out, "/mrefx.RDS"))
 
 ## enter the team lineups for set 1
 x <- dv_set_lineups(x, set_number = 1, 
-                    lineups = list(c(4,6,16,15,5,3), 
-                                   c(8,24,1,57,7,13)), 
+                    lineups = list(c(61,67,69,70,65,60), 
+                                   c(16,15,12,5,4,6)), 
                     setter_positions = c(1, 1))
 
 # Subset the attacks
