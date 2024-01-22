@@ -181,6 +181,14 @@ vr_freeball <- function(x, team, by = "player", style = "ov1"){
   }
 }
 
+attack_eff <- function(evaluation, skill) {
+  assert_that(is.character(evaluation))
+  if (!missing(skill)) {
+    assert_that(is.character(skill))
+    evaluation <- evaluation[skill %eq% "Attack"]
+  }
+  (sum(evaluation %eq% "Winning attack") - sum(evaluation %in% c("Error", "Blocked"))) / sum(!is.na(evaluation))
+}
 serve_eff <- function(evaluation, skill) {
   assert_that(is.character(evaluation))
   if (!missing(skill)) {

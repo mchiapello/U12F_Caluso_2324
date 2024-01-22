@@ -25,13 +25,98 @@ source(paste0(here::here(), "/scripts/999_utils.R"))
 
 # Read data
 file <- dir_ls(".", regexp = "*dvw$")
-x <- read_dv(file)
+x <- read_dv("partite/2024-01-20_Vela/20240120_Vela.dvw")
 noi <- "BCV Caluso"
 loro <- teams(x)[teams(x) != noi]
 
 # Create title
 tit <- x$meta$teams
 tit2 <- epoxy_html("Partita: {{x$meta$teams$team[1]}} vs {{x$meta$teams$team[2]}}")
+## add some extra cols
+y <- x
+x <- plays(x)
+    if (!"phase" %in% names(x)) x$phase <- datavolley::play_phase(x)
+    if (!"end_cone" %in% names(x)) x$end_cone <- NA_integer_
+    if (!"receiving_team" %in% names(x)) {
+        x <- mutate(x, receiving_team = case_when(.data$serving_team %eq% .data$home_team ~ .data$visiting_team,
+                                                  .data$serving_team %eq% .data$visiting_team ~ .data$home_team))
+    }
+    if (!"breakpoint/sideout" %in% names(x)) {
+        x <- mutate(x, `breakpoint/sideout` = case_when(.data$team %eq% .data$receiving_team ~ "Sideout",
+                                                        .data$team %eq% .data$serving_team ~ "Breakpoint"))
+    }
+    if (!"setter_position" %in% names(x)) {
+        x <- mutate(x, setter_position = case_when(.data$team %eq% .data$home_team ~ .data$home_setter_position,
+                                                   .data$team %eq% .data$visiting_team ~ .data$visiting_setter_position))
+    }
+    if (!"opposing_team" %in% names(x)) {
+        x <- mutate(x, opposing_team = case_when(.data$team %eq% .data$home_team ~ .data$visiting_team,
+                                                 .data$team %eq% .data$visiting_team ~ .data$home_team))
+    }
+    if (!"freeball_over" %in% names(x)) {
+        ## "Freeball" skill can be used both for sending a freeball to the opposition as well as receiving one, so disambiguate these usages
+        x <- mutate(x, freeball_over = .data$skill %eq% "Freeball" & lag(.data$match_id) %eq% .data$match_id & lag(.data$point_id) %eq% .data$point_id & ((!is.na(lead(.data$team)) & lead(.data$team) != .data$team) | lag(.data$team) %eq% .data$team))
+    }
+refx <- NULL
+
+if (!is.null(refx)) {
+        srmap <- dplyr::tribble(
+            ~skill, ~evaluation_code, ~evaluation,
+            "Serve", "=", "Error",
+            "Serve", "/", "Positive, no attack",
+            "Serve", "-", "Negative, opponent free attack",
+            "Serve", "+", "Positive, opponent some attack",
+            "Serve", "#", "Ace",
+            "Serve", "!", "OK, no first tempo possible",
+            "Reception", "=", "Error",
+            "Reception", "/", "Poor, no attack",
+            "Reception", "-", "Negative, limited attack",
+            "Reception", "-/", "Negative/poor pass",
+            "Reception", "+", "Positive, attack",
+            "Reception", "#", "Perfect pass",
+            "Reception", "#+", "Perfect/positive pass",
+            "Reception", "!", "OK, no first tempo possible")
+        ## deal with the various forms that refx can take
+        if (is.list(refx) && setequal(tolower(names(refx)), c("expso", "expbp"))) {
+            ## refx is of form list(expSO = list(`R#` = 0.7, ...), expBP = list(...)) or list(expSO = tibble(...), expBP = tibble(...)) following lso and lbp
+            names(refx) <- tolower(names(refx))
+            ## expSO
+            lso <- if (is.data.frame(refx$expso)) refx$expso else tibble(skill = "Reception", evaluation = names(refx$expso), expSO = as.numeric(unlist(refx$expso)))
+            if (all(grepl("R?[[:punct:]]", lso$evaluation))) {
+                lso <- mutate(lso, evaluation = sub("^R", "", .data$evaluation)) %>% dplyr::rename(evaluation_code = "evaluation") %>% left_join(srmap, by = c("skill", "evaluation_code")) %>% dplyr::select(-"evaluation_code")
+            }
+            lbp <- if (is.data.frame(refx$expbp)) refx$expbp else tibble(skill = "Serve", evaluation = names(refx$expbp), expBP = as.numeric(unlist(refx$expbp)))
+            if (all(grepl("S?[[:punct:]]", lbp$evaluation))) {
+                lbp <- mutate(lbp, evaluation = sub("^S", "", .data$evaluation)) %>% dplyr::rename(evaluation_code = "evaluation") %>% left_join(srmap, by = c("skill", "evaluation_code")) %>% dplyr::select(-"evaluation_code")
+            }
+            lso <- distinct(na.omit(lso))
+            lbp <- distinct(na.omit(lbp))
+            if (sum(lso$evaluation == "Error") < 1) lso <- bind_rows(lso, list(skill = "Reception", evaluation = "Error", expSO = 0))
+            if (sum(lbp$evaluation == "Error") < 1) lbp <- bind_rows(lbp, list(skill = "Serve", evaluation = "Error", expBP = 0))
+            if (sum(lbp$evaluation == "Ace") < 1) lbp <- bind_rows(lbp, list(skill = "Serve", evaluation = "Ace", expBP = 1))
+        } else {
+            lso <- refx %>% dplyr::filter(.data$skill == "Reception" & !is.na(.data$evaluation)) %>% group_by(.data$evaluation) %>% dplyr::summarize(skill = "Reception", expSO = mean0(.data$point_won_by == .data$team)) %>% ungroup
+            lbp <- refx %>% dplyr::filter(.data$skill == "Serve" & !is.na(.data$evaluation)) %>% group_by(.data$evaluation) %>% dplyr::summarize(skill = "Serve", expBP = mean0(.data$point_won_by == .data$team)) %>% ungroup
+            }
+        ## after all that, check that lso and lbp are ok
+        l_ok <- is.data.frame(lso) && is.data.frame(lbp) &&
+            setequal(names(lso), c("skill", "evaluation", "expSO")) && setequal(names(lbp), c("skill", "evaluation", "expBP")) &&
+            !any(duplicated(lso$evaluation)) && !any(duplicated(lbp$evaluation)) &&
+            all(lso$skill == "Reception") && all(lbp$skill == "Serve")
+        if (!l_ok) {
+            warning("reference data does not look correct, ignoring")
+            x$expBP <- x$expSO <- NA_real_
+        } else {
+            x <- x[, setdiff(names(x), c("expSO", "expBP")), drop = FALSE]
+            x <- left_join(x, lso, by = c("skill", "evaluation"))
+            x <- left_join(x, lbp, by = c("skill", "evaluation"))
+        }
+    } else {
+        x$expBP <- x$expSO <- NA_real_
+    }
+x2 <- x
+x <- y
+plays(x) <- x2
 ```
 
 ---
@@ -198,11 +283,11 @@ t1 <- cal %>%
 t2 <- vr_points(plays(x), by = "set", team = noi, style = "ov1")
 t3 <- vr_points(plays(x), by = "player", team = noi, style = "ov1")
 # SERVE
-t4 <- vr_serve(plays(x), by = "set", team = noi, style = "ov1")
-t5 <- vr_serve(plays(x), by = "player", team = noi, style = "ov1")
+t4 <- vr_serve(plays(x), by = "set", team = noi, style = "ov1", refx = NULL)
+t5 <- vr_serve(plays(x), by = "player", team = noi, style = "ov1", refx = NULL)
 # RECEPTION
-t6 <- vr_reception(plays(x), by = "set", team = noi, style = "ov1")
-t7 <- vr_reception(plays(x), by = "player", team = noi, style = "ov1")
+t6 <- vr_reception(plays(x), by = "set", team = noi, style = "ov1", refx = NULL)
+t7 <- vr_reception(plays(x), by = "player", team = noi, style = "ov1", refx = NULL)
 # ATTACK
 t8 <- vr_attack(plays(x), by = "set", team = noi, style = "ov1")
 t9 <- vr_attack(plays(x), by = "player", team = noi, style = "ov1")
@@ -229,6 +314,9 @@ t1 %>%
     mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
     mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
     mutate(across(where(is.character), ~replace_na(.x, "0"))) %>% 
+    mutate(Error = rowSums(select(., starts_with("Err"))),
+           `W-L` = Won - Error) |> 
+    relocate(Error, `W-L`, .after = Won) |> 
     filter(if_any(starts_with("set"), ~ . != "-")) %>% 
     ### GT TABLE
     gt(id = "four") %>%
@@ -236,37 +324,35 @@ t1 %>%
     #   title = paste0(noi)) %>% 
     tab_spanner(
         label = "Punti",
-        columns = Tot.x:`W-L`) %>% 
+        columns = Won:`W-L`) %>% 
     tab_spanner(
         label = "Battuta",
-        columns = Tot.y:Pos) %>% 
+        columns = Tot.x:`srvEff%`) %>% 
     tab_spanner(
         label = "Ricezione",
-        columns = Tot.x.x:`(Exc%)`) %>% 
+        columns = Tot.y:`recEff%`) %>% 
     tab_spanner(
         label = "Attacco",
-        columns = Tot.y.y:`Pts%`) %>% 
+        columns = Tot.x.x:`attEff%`) %>% 
     tab_spanner(
         label = "Freeball",
-        columns = Tot:Err.y.y) %>%
+        columns = Tot.y.y:Err.y.y) %>%
     tab_spanner(
         label = "Muro",
-        columns = Punto) %>%
+        columns = Tot) %>%
     cols_label(
+        Won = html("<strong>Won</strong>"),
+        Error = html("<strong>Err</strong>"),
         Tot.x = html("<strong>Tot</strong>"),
-        Nerr = html("<strong>Err</strong>"),
         `W-L` = html("D"),
         Tot.y = html("<strong>Tot</strong>"),
         Err.x = html("<strong>Err</strong>"),
-        Pts.x = html("Pts"),
         Tot.x.x = html("<strong>Tot</strong>"),
         Err.y = html("<strong>Err</strong>"),
         Tot.y.y = html("<strong>Tot</strong>"),
         Err.x.x = html("<strong>Err</strong>"),
-        Pts.y = html("Pts"),
-        Tot = html("<strong>Tot</strong>"),
         Err.y.y = html("<strong>Err</strong>"),
-        Punto = html("Pts")) %>% 
+        Tot = html("Pts")) %>% 
     cols_align(
     align = "center") %>% 
     tab_header(title = paste0(noi)) %>% 
@@ -520,22 +606,22 @@ t1 <- oth %>%
 
 #####################
 # POINTS
-t2 <- vr_points(x, by = "set", team_select = loro)
-t3 <- vr_points(x, by = "player", team_select = loro)
+t2 <- vr_points(plays(x), by = "set", team = loro, style = "ov1")
+t3 <- vr_points(plays(x), by = "player", team = loro, style = "ov1")
 # SERVE
-t4 <- vr_serve(x, by = "set", team_select = loro)
-t5 <- vr_serve(x, by = "player", team_select = loro)
+t4 <- vr_serve(plays(x), by = "set", team = loro, style = "ov1", refx = NULL)
+t5 <- vr_serve(plays(x), by = "player", team = loro, style = "ov1", refx = NULL)
 # RECEPTION
-t6 <- vr_reception(x, by = "set", team_select = loro)
-t7 <- vr_reception(x, by = "player", team_select = loro)
+t6 <- vr_reception(plays(x), by = "set", team = loro, style = "ov1", refx = NULL)
+t7 <- vr_reception(plays(x), by = "player", team = loro, style = "ov1", refx = NULL)
 # ATTACK
-t8 <- vr_attack(x, by = "set", team_select = loro)
-t9 <- vr_attack(x, by = "player", team_select = loro)
-t10 <- vr_freeball(x, by = "set", team_select = loro)
-t11 <- vr_freeball(x, by = "player", team_select = loro)
+t8 <- vr_attack(plays(x), by = "set", team = loro, style = "ov1")
+t9 <- vr_attack(plays(x), by = "player", team = loro, style = "ov1")
+t10 <- vr_freeball(x, by = "set", team = loro)
+t11 <- vr_freeball(x, by = "player", team = loro)
 # BLOCK
-t12 <- vr_block(x, by = "set", team_select = loro)
-t13 <- vr_block(x, by = "player", team_select = loro)
+t12 <- vr_block(plays(x), by = "set", team = loro, style = "ov1")
+t13 <- vr_block(plays(x), by = "player", team = loro, style = "ov1")
 ######################
 # TABLE
 y <- plays(x)
@@ -554,6 +640,9 @@ t1 %>%
     mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
     mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
     mutate(across(where(is.character), ~replace_na(.x, "0"))) %>% 
+    mutate(Error = rowSums(select(., starts_with("Err"))),
+           `W-L` = Won - Error) |> 
+    relocate(Error, `W-L`, .after = Won) |> 
     filter(if_any(starts_with("set"), ~ . != "-")) %>% 
     ### GT TABLE
     gt(id = "four") %>%
@@ -561,37 +650,35 @@ t1 %>%
     #   title = paste0(noi)) %>% 
     tab_spanner(
         label = "Punti",
-        columns = Tot.x:`W-L`) %>% 
+        columns = Won:`W-L`) %>% 
     tab_spanner(
         label = "Battuta",
-        columns = Tot.y:Pos) %>% 
+        columns = Tot.x:`srvEff%`) %>% 
     tab_spanner(
         label = "Ricezione",
-        columns = Tot.x.x:`(Exc%)`) %>% 
+        columns = Tot.y:`recEff%`) %>% 
     tab_spanner(
         label = "Attacco",
-        columns = Tot.y.y:`Pts%`) %>% 
+        columns = Tot.x.x:`attEff%`) %>% 
     tab_spanner(
         label = "Freeball",
-        columns = Tot:Err.y.y) %>%
+        columns = Tot.y.y:Err.y.y) %>%
     tab_spanner(
         label = "Muro",
-        columns = Punto) %>%
+        columns = Tot) %>%
     cols_label(
+        Won = html("<strong>Won</strong>"),
+        Error = html("<strong>Err</strong>"),
         Tot.x = html("<strong>Tot</strong>"),
-        Nerr = html("<strong>Err</strong>"),
         `W-L` = html("D"),
         Tot.y = html("<strong>Tot</strong>"),
         Err.x = html("<strong>Err</strong>"),
-        Pts.x = html("Pts"),
         Tot.x.x = html("<strong>Tot</strong>"),
         Err.y = html("<strong>Err</strong>"),
         Tot.y.y = html("<strong>Tot</strong>"),
         Err.x.x = html("<strong>Err</strong>"),
-        Pts.y = html("Pts"),
-        Tot = html("<strong>Tot</strong>"),
         Err.y.y = html("<strong>Err</strong>"),
-        Punto = html("Pts")) %>% 
+        Tot = html("Pts")) %>% 
     cols_align(
     align = "center") %>% 
     tab_header(title = paste0(loro)) %>% 
