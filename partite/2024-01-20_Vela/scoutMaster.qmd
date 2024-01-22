@@ -25,7 +25,7 @@ source(paste0(here::here(), "/scripts/999_utils.R"))
 
 # Read data
 file <- dir_ls(".", regexp = "*dvw$")
-x <- read_dv("partite/2024-01-20_Vela/20240120_Vela.dvw")
+x <- read_dv(file)
 noi <- "BCV Caluso"
 loro <- teams(x)[teams(x) != noi]
 
@@ -276,7 +276,8 @@ if(x$meta$teams$team[1] == "BCV Caluso"){
 t1 <- cal %>% 
     select(number, name, starting_position_set1:starting_position_set5) %>% 
     select(where(~sum(!is.na(.x)) > 0)) %>% 
-    rename_with(~str_remove(.x, "starting_position_"))
+    rename_with(~str_remove(.x, "starting_position_")) 
+  
 
 #####################
 # POINTS
@@ -304,6 +305,9 @@ t1 %>%
                   dplyr::select(player_id, player_name) %>% 
                   filter(!is.na(player_id)) %>% 
                   distinct(), by = c("name" = "player_name")) %>% 
+  bind_rows(tibble(number = 0,
+                   name = "Total",
+                   player_id = "Team total")) |> 
     left_join(t3, by = "player_id") %>% 
     left_join(t5, by = "player_id") %>%
     left_join(t7, by = "player_id") %>%
@@ -317,7 +321,7 @@ t1 %>%
     mutate(Error = rowSums(select(., starts_with("Err"))),
            `W-L` = Won - Error) |> 
     relocate(Error, `W-L`, .after = Won) |> 
-    filter(if_any(starts_with("set"), ~ . != "-")) %>% 
+    filter(if_any(starts_with("set"), ~ . != "-") | name == "Total") %>% 
     ### GT TABLE
     gt(id = "four") %>%
     # tab_header(
@@ -491,51 +495,59 @@ pnoi1
 ```{r}
 # Summary
 ## NOI
-vr_points(x, by = "set", team_select = noi) %>% 
-    bind_cols(vr_serve(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_reception(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_attack(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_freeball(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_block(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+# vr_points(x, by = "set", team_select = noi) %>% 
+#     bind_cols(vr_serve(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+#     bind_cols(vr_reception(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+#     bind_cols(vr_attack(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+#     bind_cols(vr_freeball(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+#     bind_cols(vr_block(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+t2 |> 
+  bind_cols(t4 |> select(-set_number)) |> 
+  bind_cols(t6 |> select(-set_number)) |> 
+  bind_cols(t8 |>  select(-set_number)) |> 
+  bind_cols(t10 |> select(-set_number)) |> 
+  bind_cols(t12 |> select(-set_number)) |> 
+  rowwise() |> 
+  mutate(Error = sum(c_across(starts_with("Err"))),
+           `W-L` = Won - Error) |> 
+  ungroup() |> 
+    relocate(Error, `W-L`, .after = Op.Er) |> 
     ### GT TABLE
     gt(id = "five") %>%
     # tab_header(
     #   title = paste0(noi)) %>% 
     tab_spanner(
         label = "Punti",
-        columns = Tot...2:Op.Er) %>% 
+        columns = Won:`W-L`) %>% 
     tab_spanner(
         label = "Battuta",
-        columns = Tot...7:Pos) %>% 
+        columns = Tot...7:`BP%`) %>% 
     tab_spanner(
         label = "Ricezione",
-        columns = Tot...12:`(Exc%)`) %>% 
+        columns = Tot...12:`SO%`) %>% 
     tab_spanner(
         label = "Attacco",
-        columns = Tot...17:`Pts%`) %>% 
+        columns = Tot...18:`attEff%`) %>% 
     tab_spanner(
         label = "Freeball",
-        columns = Tot...22:Err...23) %>%
+        columns = Tot...24:Err...25) %>%
     tab_spanner(
         label = "Muro",
-        columns = Punto) %>%
+        columns = Tot...26) %>%
     cols_label(
         set_number = html("Set"),
-        Tot...2 = html("<strong>Tot</strong>"),
+        Won = html("<strong>Won</strong>"),
         Ser = html("Bat"),
         Blo...5 = html("Muro"),
         Tot...7 = html("<strong>Tot</strong>"),
         Err...8 = html("<strong>Err</strong>"),
-        Pts...9 = html("Pts"),
         Tot...12 = html("<strong>Tot</strong>"),
         Err...13 = html("<strong>Err</strong>"),
-        Tot...17 = html("<strong>Tot</strong>"),
-        Err...18 = html("<strong>Err</strong>"),
-        Blo...19 = html("Muro"),
-        Pts...20 = html("Pts"),
-        Tot...22 = html("<strong>Tot</strong>"),
-        Err...23 = html("<strong>Err</strong>"),
-        Punto = html("Pts")) %>% 
+        Err...19 = html("<strong>Err</strong>"),
+        Blo...20 = html("Muro"),
+        Tot...24 = html("<strong>Tot</strong>"),
+        Err...25 = html("<strong>Err</strong>"),
+        Tot...26 = html("Muro")) %>% 
     cols_align(
     align = "center") %>% 
     tab_options(table.width = px(500),
@@ -630,6 +642,9 @@ t1 %>%
                   dplyr::select(player_id, player_name) %>% 
                   filter(!is.na(player_id)) %>% 
                   distinct(), by = c("name" = "player_name")) %>% 
+  bind_rows(tibble(number = 0,
+                   name = "Total",
+                   player_id = "Team total")) |> 
     left_join(t3, by = "player_id") %>% 
     left_join(t5, by = "player_id") %>%
     left_join(t7, by = "player_id") %>%
@@ -643,7 +658,7 @@ t1 %>%
     mutate(Error = rowSums(select(., starts_with("Err"))),
            `W-L` = Won - Error) |> 
     relocate(Error, `W-L`, .after = Won) |> 
-    filter(if_any(starts_with("set"), ~ . != "-")) %>% 
+    filter(if_any(starts_with("set"), ~ . != "-") | name == "Total") %>% 
     ### GT TABLE
     gt(id = "four") %>%
     # tab_header(
@@ -681,7 +696,7 @@ t1 %>%
         Tot = html("Pts")) %>% 
     cols_align(
     align = "center") %>% 
-    tab_header(title = paste0(loro)) %>% 
+    tab_header(title = paste0(noi)) %>% 
     tab_options(table.width = px(700),
                 row.striping.include_table_body = TRUE) %>% 
     tab_style(style = cell_borders(sides = "left",
@@ -738,51 +753,53 @@ ploro1
 ```{r}
 # Summary
 ## LORO
-vr_points(x, by = "set", team_select = loro) %>% 
-    bind_cols(vr_serve(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
-    bind_cols(vr_reception(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
-    bind_cols(vr_attack(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
-    bind_cols(vr_freeball(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
-    bind_cols(vr_block(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+t2 |> 
+  bind_cols(t4 |> select(-set_number)) |> 
+  bind_cols(t6 |> select(-set_number)) |> 
+  bind_cols(t8 |>  select(-set_number)) |> 
+  bind_cols(t10 |> select(-set_number)) |> 
+  bind_cols(t12 |> select(-set_number)) |> 
+  rowwise() |> 
+  mutate(Error = sum(c_across(starts_with("Err"))),
+           `W-L` = Won - Error) |> 
+  ungroup() |> 
+    relocate(Error, `W-L`, .after = Op.Er) |> 
     ### GT TABLE
     gt(id = "five") %>%
     # tab_header(
     #   title = paste0(noi)) %>% 
     tab_spanner(
         label = "Punti",
-        columns = Tot...2:Op.Er) %>% 
+        columns = Won:`W-L`) %>% 
     tab_spanner(
         label = "Battuta",
-        columns = Tot...7:Pos) %>% 
+        columns = Tot...7:`BP%`) %>% 
     tab_spanner(
         label = "Ricezione",
-        columns = Tot...12:`(Exc%)`) %>% 
+        columns = Tot...12:`SO%`) %>% 
     tab_spanner(
         label = "Attacco",
-        columns = Tot...17:`Pts%`) %>% 
+        columns = Tot...18:`attEff%`) %>% 
     tab_spanner(
         label = "Freeball",
-        columns = Tot...22:Err...23) %>%
+        columns = Tot...24:Err...25) %>%
     tab_spanner(
         label = "Muro",
-        columns = Punto) %>%
+        columns = Tot...26) %>%
     cols_label(
         set_number = html("Set"),
-        Tot...2 = html("<strong>Tot</strong>"),
+        Won = html("<strong>Won</strong>"),
         Ser = html("Bat"),
         Blo...5 = html("Muro"),
         Tot...7 = html("<strong>Tot</strong>"),
         Err...8 = html("<strong>Err</strong>"),
-        Pts...9 = html("Pts"),
         Tot...12 = html("<strong>Tot</strong>"),
         Err...13 = html("<strong>Err</strong>"),
-        Tot...17 = html("<strong>Tot</strong>"),
-        Err...18 = html("<strong>Err</strong>"),
-        Blo...19 = html("Muro"),
-        Pts...20 = html("Pts"),
-        Tot...22 = html("<strong>Tot</strong>"),
-        Err...23 = html("<strong>Err</strong>"),
-        Punto = html("Pts")) %>% 
+        Err...19 = html("<strong>Err</strong>"),
+        Blo...20 = html("Muro"),
+        Tot...24 = html("<strong>Tot</strong>"),
+        Err...25 = html("<strong>Err</strong>"),
+        Tot...26 = html("Muro")) %>% 
     cols_align(
     align = "center") %>% 
     tab_options(table.width = px(500),
@@ -817,7 +834,6 @@ vr_points(x, by = "set", team_select = loro) %>%
     css = "
     #five {
       padding: 0px !important;
-      margin-left: 0px;
     }
     #five .gt_col_heading {
       padding: 2px 3px;
