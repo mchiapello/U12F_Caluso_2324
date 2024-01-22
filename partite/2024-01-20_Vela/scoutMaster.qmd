@@ -1,11 +1,7 @@
 ---
-title: "VeLa - BCV Foglizzo"
-format:
+format: 
   html:
-    toc: false
-    theme: journal
     page-layout: custom
-    number-sections: false
 execute:
   echo: false
   message: false
@@ -13,30 +9,43 @@ execute:
 ---
 
 ```{r}
-#| include: false
+# Libraries
 library(tidyverse)
+library(fs)
+library(here)
 library(datavolley)
+library(epoxy)
 library(gt)
 library(gtExtras)
-library(patchwork)
+library(assertthat)
+library(ggtext)
+library(volleyreport)
 source(paste0(here::here(), "/scripts/999_utils.R"))
+
 # Read data
-file <- fs::dir_ls(paste0(here::here(), "/partite/2024-01-20_Vela/"), 
-                   regexp = "dvw$")
-x <- dv_read(file)
-noi <- teams(x)[1]
+file <- dir_ls(".", regexp = "*dvw$")
+x <- read_dv(file)
+noi <- "BCV Caluso"
 loro <- teams(x)[teams(x) != noi]
+
+# Create title
+tit <- x$meta$teams
+tit2 <- epoxy_html("Partita: {{x$meta$teams$team[1]}} vs {{x$meta$teams$team[2]}}")
 ```
 
+---
+title: "`r tit2`"
+---
+
 ::: grid
-::: g-col-3
+::: {.g-col-3 style="padding: 0px !important;"}
 ```{r}
 x$meta$teams %>%
     select(team, sets_won) %>% 
     gt(id = "one") %>%
      cols_align(
     align = "center") %>% 
-    tab_header(title = "Risultato finale") %>% 
+    # tab_header(title = "Risultato finale") %>% 
     fmt_markdown(columns = everything()) %>%
     tab_options(table.width = px(120),
                 column_labels.hidden = TRUE) %>% 
@@ -44,7 +53,7 @@ x$meta$teams %>%
     css = "
     #one .gt_header {
       padding: 2px 3px;
-      font-size: 10px;
+      font-size: 5px;
       color: lightgreen;
       text-align: center !important;
     }
@@ -162,203 +171,23 @@ x$meta$result %>%
 ::: grid
 ::: g-col-12
 ```{r}
-# Summary
-## NOI
-vr_points(x, by = "set", team_select = loro) %>% 
-    bind_cols(vr_serve(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_reception(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_attack(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_freeball(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    bind_cols(vr_block(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
-    ### GT TABLE
-    gt(id = "five") %>%
-    # tab_header(
-    #   title = paste0(noi)) %>% 
-    tab_spanner(
-        label = "Punti",
-        columns = Tot...2:Op.Er) %>% 
-    tab_spanner(
-        label = "Battuta",
-        columns = Tot...7:Pos) %>% 
-    tab_spanner(
-        label = "Ricezione",
-        columns = Tot...12:`(Exc%)`) %>% 
-    tab_spanner(
-        label = "Attacco",
-        columns = Tot...17:`Pts%`) %>% 
-    tab_spanner(
-        label = "Freeball",
-        columns = Tot...22:Err...23) %>%
-    tab_spanner(
-        label = "Muro",
-        columns = Punto) %>%
-    cols_label(
-        set_number = html("Set"),
-        Tot...2 = html("<strong>Tot</strong>"),
-        Ser = html("Bat"),
-        Blo...5 = html("Muro"),
-        Tot...7 = html("<strong>Tot</strong>"),
-        Err...8 = html("<strong>Err</strong>"),
-        Pts...9 = html("Pts"),
-        Tot...12 = html("<strong>Tot</strong>"),
-        Err...13 = html("<strong>Err</strong>"),
-        Tot...17 = html("<strong>Tot</strong>"),
-        Err...18 = html("<strong>Err</strong>"),
-        Blo...19 = html("Muro"),
-        Pts...20 = html("Pts"),
-        Tot...22 = html("<strong>Tot</strong>"),
-        Err...23 = html("<strong>Err</strong>"),
-        Punto = html("Pts")) %>% 
-    cols_align(
-    align = "center") %>% 
-    tab_options(table.width = px(500),
-                row.striping.include_table_body = TRUE) %>% 
-        tab_style(style = cell_borders(sides = "left",
-                                   color = "grey50",
-                                   weight = px(.9),
-                                   style = "solid"),
-              locations = cells_body(columns = starts_with("To"),
-                                     rows = everything())) %>% 
-    tab_style(style = cell_borders(sides = "left",
-                                   color = "grey50",
-                                   weight = px(.9),
-                                   style = "solid"),
-              locations = cells_body(columns = starts_with("set1"),
-                                     rows = everything())) %>% 
-    tab_style(style = cell_borders(sides = "left",
-                                   color = "grey50",
-                                   weight = px(.9),
-                                   style = "solid"),
-              locations = cells_body(columns = last_col(),
-                                     rows = everything())) %>% 
-    # tab_style(
-    # style = list(
-    #   cell_fill(color = "grey60"),
-    #   cell_text(weight = "bold")
-    #   ),
-    # locations = cells_body(
-    #   columns = Tot...2,
-    #   rows = Tot...2 == max(Tot...2))) %>% 
-    opt_css(
-    css = "
-    #five .gt_col_heading {
-      padding: 2px 3px;
-      font-size: 8px;
-    }
-    #five .gt_column_spanner {
-      padding: 0px 0px;
-      font-size: 9px;
-    }
-    #five .gt_row {
-      padding: 2px 3px;
-      font-size: 9px;
-    }
-    #five .gt_col_heading {
-      text-align: center !important;
-    }
-    ")
+#| fig-width: 12
+#| fig-height: 3
+
+vr_score_evplot(x, with_summary = TRUE, use_icons = TRUE, font_size = 16)
 ```
 :::
 :::
-
-::: grid
-::: g-col-6
-```{r}
-vr_content_team_each <- function(x, which_team = noi) {
-    if(which_team == noi){
-        home <- teams(x)[teams(x) == noi]
-        away <- teams(x)[teams(x) != noi]
-    } else {
-        home <- teams(x)[teams(x) != noi]
-        away <- teams(x)[teams(x) == noi]
-    }
-    y <- plays(x)
-    rthis <- y %>%
-        dplyr::summarize(Ricezioni = sum(.data$skill == "Reception" & .data$team == home, na.rm = TRUE),
-                         'Punti guadagnati in Cambio Palla' = sum(.data$serving_team == away & .data$skill %in% c("Attack", "Block") & .data$evaluation_code == "#" & .data$team == home, na.rm = TRUE)) %>%
-        pivot_longer(cols = 1:2)
-    sthis <- y %>% 
-        dplyr::filter(.data$team == home) %>%
-        dplyr::summarize(Battute = sum(.data$skill == "Serve", na.rm = TRUE),
-                         'Punti guadagnati in Break Point' = sum(.data$serving_team == home  & .data$skill %in% c("Serve", "Attack", "Block") & .data$evaluation_code == "#", na.rm = TRUE)) %>%
-        pivot_longer(cols = 1:2)
-   rthis %>% 
-       bind_rows(sthis) %>% 
-       bind_rows(tibble(name = c(paste0("1 Punto ogni ", round(rthis$value[1]/rthis$value[2], 2), 
-                                        " ricezioni"),
-                                 paste0("1 Punto ogni ", round(sthis$value[1]/sthis$value[2], 2), 
-                                        " battute")),
-                        value = NA))
-          
-}
-noi1 <- vr_content_team_each(x, which_team = noi)
-pnoi1 <- noi1 %>% 
-    dplyr::slice(1:4) %>% 
-    gt(id = "six") %>% 
-    tab_options(table.width = px(170),
-                column_labels.hidden = TRUE) %>%
-    tab_header(title = paste0(noi)) %>% 
-    tab_source_note(noi1 %>% 
-                        dplyr::slice(5:6) %>% 
-                        pull(name)) %>% 
-    cols_align(align = "center") %>% 
-    opt_css(
-    css = "
-    #six .gt_title {
-      font-size: 10px !important;
-    }
-    #six .gt_sourcenote {
-      font-size: 10px !important;
-    }
-    #six .gt_col_heading {
-      padding: 2px 3px;
-      font-size: 10px;
-    }
-    #six .gt_column_spanner {
-      padding: 0px 0px;
-      font-size: 8px;
-    }
-    #six .gt_row {
-      padding: 2px 3px;
-      font-size: 9px;
-    }
-    #six .gt_col_heading {
-      text-align: center !important;
-    }
-     #six .gt_row {
-      padding: 1px 0px 1px 0px !important;
-    }
-    ")
-
-loro1 <- vr_content_team_each(x, which_team = loro)
-ploro1 <- loro1 %>% 
-     dplyr::slice(1:4) %>% 
-     gt(id = "six") %>% 
-    tab_options(table.width = px(170),
-                column_labels.hidden = TRUE) %>%
-    tab_header(title = paste0(loro)) %>% 
-    tab_source_note(loro1 %>% 
-                        dplyr::slice(5:6) %>% 
-                        pull(name)) %>% 
-    cols_align(align = "center")
-
-pnoi1
-```
-:::
-
-::: g-col-6
-```{r}
-ploro1
-```
-
-:::
-:::
-
 
 ::: grid
 ::: g-col-12
 ```{r}
-t1 <- x$meta$players_h %>% 
+if(x$meta$teams$team[1] == "BCV Caluso"){
+  cal <- x$meta$players_h
+} else {
+  cal <- x$meta$players_v
+}
+t1 <- cal %>% 
     select(number, name, starting_position_set1:starting_position_set5) %>% 
     select(where(~sum(!is.na(.x)) > 0)) %>% 
     rename_with(~str_remove(.x, "starting_position_"))
@@ -439,6 +268,7 @@ t1 %>%
         Punto = html("Pts")) %>% 
     cols_align(
     align = "center") %>% 
+    tab_header(title = paste0(noi)) %>% 
     tab_options(table.width = px(700),
                 row.striping.include_table_body = TRUE) %>% 
     tab_style(style = cell_borders(sides = "left",
@@ -461,6 +291,9 @@ t1 %>%
                                      rows = everything())) %>% 
     opt_css(
     css = "
+    #four {
+      padding: 0px !important;
+    }
     #four .gt_col_heading {
       padding: 2px 3px;
       font-size: 9px;
@@ -482,9 +315,204 @@ t1 %>%
 :::
 
 ::: grid
-::: g-col-12
+::: g-col-3
 ```{r}
-t1 <- x$meta$players_v %>% 
+vr_content_team_each <- function(x, which_team = noi) {
+    if(which_team == noi){
+        home <- teams(x)[teams(x) == noi]
+        away <- teams(x)[teams(x) != noi]
+    } else {
+        home <- teams(x)[teams(x) != noi]
+        away <- teams(x)[teams(x) == noi]
+    }
+    y <- plays(x)
+    rthis <- y %>%
+        dplyr::summarize(Ricezioni = sum(.data$skill == "Reception" & .data$team == home, na.rm = TRUE),
+                         'Punti guadagnati in Cambio Palla' = sum(.data$serving_team == away & .data$skill %in% c("Attack", "Block") & .data$evaluation_code == "#" & .data$team == home, na.rm = TRUE)) %>%
+        pivot_longer(cols = 1:2)
+    sthis <- y %>% 
+        dplyr::filter(.data$team == home) %>%
+        dplyr::summarize(Battute = sum(.data$skill == "Serve", na.rm = TRUE),
+                         'Punti guadagnati in Break Point' = sum(.data$serving_team == home  & .data$skill %in% c("Serve", "Attack", "Block") & .data$evaluation_code == "#", na.rm = TRUE)) %>%
+        pivot_longer(cols = 1:2)
+   rthis %>% 
+       bind_rows(sthis) %>% 
+       bind_rows(tibble(name = c(paste0("1 Punto ogni ", round(rthis$value[1]/rthis$value[2], 2), 
+                                        " ricezioni"),
+                                 paste0("1 Punto ogni ", round(sthis$value[1]/sthis$value[2], 2), 
+                                        " battute")),
+                        value = NA))
+          
+}
+noi1 <- vr_content_team_each(x, which_team = noi)
+pnoi1 <- noi1 %>% 
+    dplyr::slice(1:4) %>% 
+    gt(id = "six") %>% 
+    tab_options(table.width = px(170),
+                column_labels.hidden = TRUE) %>%
+    tab_source_note(noi1 %>% 
+                        dplyr::slice(5:6) %>% 
+                        pull(name)) %>% 
+    cols_align(align = "center") %>% 
+    opt_css(
+    css = "
+    #six {
+      padding: 0px !important;
+    }
+    #six .gt_title {
+      font-size: 10px !important;
+    }
+    #six .gt_sourcenote {
+      font-size: 10px !important;
+    }
+    #six .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 10px;
+    }
+    #six .gt_column_spanner {
+      padding: 0px 0px;
+      font-size: 8px;
+    }
+    #six .gt_row {
+      padding: 2px 3px;
+      font-size: 9px;
+    }
+    #six .gt_col_heading {
+      text-align: center !important;
+    }
+     #six .gt_row {
+      padding: 1px 0px 1px 0px !important;
+    }
+    ")
+
+loro1 <- vr_content_team_each(x, which_team = loro)
+ploro1 <- loro1 %>% 
+     dplyr::slice(1:4) %>% 
+     gt(id = "six") %>% 
+    tab_options(table.width = px(170),
+                column_labels.hidden = TRUE) %>%
+    tab_source_note(loro1 %>% 
+                        dplyr::slice(5:6) %>% 
+                        pull(name)) %>% 
+    cols_align(align = "center")
+
+pnoi1
+```
+:::
+
+::: g-col-9
+```{r}
+# Summary
+## NOI
+vr_points(x, by = "set", team_select = noi) %>% 
+    bind_cols(vr_serve(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+    bind_cols(vr_reception(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+    bind_cols(vr_attack(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+    bind_cols(vr_freeball(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+    bind_cols(vr_block(x, by = "set", team_select = noi) %>% select(-set_number)) %>% 
+    ### GT TABLE
+    gt(id = "five") %>%
+    # tab_header(
+    #   title = paste0(noi)) %>% 
+    tab_spanner(
+        label = "Punti",
+        columns = Tot...2:Op.Er) %>% 
+    tab_spanner(
+        label = "Battuta",
+        columns = Tot...7:Pos) %>% 
+    tab_spanner(
+        label = "Ricezione",
+        columns = Tot...12:`(Exc%)`) %>% 
+    tab_spanner(
+        label = "Attacco",
+        columns = Tot...17:`Pts%`) %>% 
+    tab_spanner(
+        label = "Freeball",
+        columns = Tot...22:Err...23) %>%
+    tab_spanner(
+        label = "Muro",
+        columns = Punto) %>%
+    cols_label(
+        set_number = html("Set"),
+        Tot...2 = html("<strong>Tot</strong>"),
+        Ser = html("Bat"),
+        Blo...5 = html("Muro"),
+        Tot...7 = html("<strong>Tot</strong>"),
+        Err...8 = html("<strong>Err</strong>"),
+        Pts...9 = html("Pts"),
+        Tot...12 = html("<strong>Tot</strong>"),
+        Err...13 = html("<strong>Err</strong>"),
+        Tot...17 = html("<strong>Tot</strong>"),
+        Err...18 = html("<strong>Err</strong>"),
+        Blo...19 = html("Muro"),
+        Pts...20 = html("Pts"),
+        Tot...22 = html("<strong>Tot</strong>"),
+        Err...23 = html("<strong>Err</strong>"),
+        Punto = html("Pts")) %>% 
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(500),
+                row.striping.include_table_body = TRUE) %>% 
+        tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("To"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("set1"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = last_col(),
+                                     rows = everything())) %>% 
+    # tab_style(
+    # style = list(
+    #   cell_fill(color = "grey60"),
+    #   cell_text(weight = "bold")
+    #   ),
+    # locations = cells_body(
+    #   columns = Tot...2,
+    #   rows = Tot...2 == max(Tot...2))) %>% 
+    opt_css(
+    css = "
+    #five {
+      padding: 0px !important;
+    }
+    #five .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 8px;
+    }
+    #five .gt_column_spanner {
+      padding: 0px 0px;
+      font-size: 9px;
+    }
+    #five .gt_row {
+      padding: 2px 3px;
+      font-size: 9px;
+    }
+    #five .gt_col_heading {
+      text-align: center !important;
+    }
+    ")
+```
+:::
+:::
+
+::: grid
+::: g-col-11
+```{r}
+if(x$meta$teams$team[2] == "BCV Caluso"){
+  oth <- x$meta$players_h
+} else {
+  oth <- x$meta$players_v
+}
+t1 <- oth %>% 
     select(number, name, starting_position_set1:starting_position_set5) %>% 
     select(where(~sum(!is.na(.x)) > 0)) %>% 
     rename_with(~str_remove(.x, "starting_position_"))
@@ -565,6 +593,7 @@ t1 %>%
         Punto = html("Pts")) %>% 
     cols_align(
     align = "center") %>% 
+    tab_header(title = paste0(loro)) %>% 
     tab_options(table.width = px(700),
                 row.striping.include_table_body = TRUE) %>% 
     tab_style(style = cell_borders(sides = "left",
@@ -587,6 +616,9 @@ t1 %>%
                                      rows = everything())) %>% 
     opt_css(
     css = "
+    #four {
+      padding: 0px !important;
+    }
     #four .gt_col_heading {
       padding: 2px 3px;
       font-size: 9px;
@@ -603,6 +635,118 @@ t1 %>%
       text-align: center !important;
     }
     ") 
+```
+:::
+:::
+
+::: grid
+::: {.g-col-3 style="padding-bottom: 0px !important;"}
+```{r}
+ploro1
+```
+:::
+
+::: g-col-9
+```{r}
+# Summary
+## LORO
+vr_points(x, by = "set", team_select = loro) %>% 
+    bind_cols(vr_serve(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_reception(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_attack(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_freeball(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    bind_cols(vr_block(x, by = "set", team_select = loro) %>% select(-set_number)) %>% 
+    ### GT TABLE
+    gt(id = "five") %>%
+    # tab_header(
+    #   title = paste0(noi)) %>% 
+    tab_spanner(
+        label = "Punti",
+        columns = Tot...2:Op.Er) %>% 
+    tab_spanner(
+        label = "Battuta",
+        columns = Tot...7:Pos) %>% 
+    tab_spanner(
+        label = "Ricezione",
+        columns = Tot...12:`(Exc%)`) %>% 
+    tab_spanner(
+        label = "Attacco",
+        columns = Tot...17:`Pts%`) %>% 
+    tab_spanner(
+        label = "Freeball",
+        columns = Tot...22:Err...23) %>%
+    tab_spanner(
+        label = "Muro",
+        columns = Punto) %>%
+    cols_label(
+        set_number = html("Set"),
+        Tot...2 = html("<strong>Tot</strong>"),
+        Ser = html("Bat"),
+        Blo...5 = html("Muro"),
+        Tot...7 = html("<strong>Tot</strong>"),
+        Err...8 = html("<strong>Err</strong>"),
+        Pts...9 = html("Pts"),
+        Tot...12 = html("<strong>Tot</strong>"),
+        Err...13 = html("<strong>Err</strong>"),
+        Tot...17 = html("<strong>Tot</strong>"),
+        Err...18 = html("<strong>Err</strong>"),
+        Blo...19 = html("Muro"),
+        Pts...20 = html("Pts"),
+        Tot...22 = html("<strong>Tot</strong>"),
+        Err...23 = html("<strong>Err</strong>"),
+        Punto = html("Pts")) %>% 
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(500),
+                row.striping.include_table_body = TRUE) %>% 
+        tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("To"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("set1"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = last_col(),
+                                     rows = everything())) %>% 
+    # tab_style(
+    # style = list(
+    #   cell_fill(color = "grey60"),
+    #   cell_text(weight = "bold")
+    #   ),
+    # locations = cells_body(
+    #   columns = Tot...2,
+    #   rows = Tot...2 == max(Tot...2))) %>% 
+    opt_css(
+    css = "
+    #five {
+      padding: 0px !important;
+      margin-left: 0px;
+    }
+    #five .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 8px;
+    }
+    #five .gt_column_spanner {
+      padding: 0px 0px;
+      font-size: 9px;
+    }
+    #five .gt_row {
+      padding: 2px 3px;
+      font-size: 9px;
+    }
+    #five .gt_col_heading {
+      text-align: center !important;
+    }
+    ")
 ```
 :::
 :::
