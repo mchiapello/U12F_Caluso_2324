@@ -14,6 +14,7 @@ library(tidyverse)
 library(fs)
 library(here)
 library(datavolley)
+library(volleyreport)
 library(epoxy)
 library(gt)
 library(gtExtras)
@@ -194,22 +195,22 @@ t1 <- cal %>%
 
 #####################
 # POINTS
-t2 <- vr_points(x, by = "set", team_select = noi)
-t3 <- vr_points(x, by = "player", team_select = noi)
+t2 <- vr_points(plays(x), by = "set", team = noi, style = "ov1")
+t3 <- vr_points(plays(x), by = "player", team = noi, style = "ov1")
 # SERVE
-t4 <- vr_serve(x, by = "set", team_select = noi)
-t5 <- vr_serve(x, by = "player", team_select = noi)
+t4 <- vr_serve(plays(x), by = "set", team = noi, style = "ov1")
+t5 <- vr_serve(plays(x), by = "player", team = noi, style = "ov1")
 # RECEPTION
-t6 <- vr_reception(x, by = "set", team_select = noi)
-t7 <- vr_reception(x, by = "player", team_select = noi)
+t6 <- vr_reception(plays(x), by = "set", team = noi, style = "ov1")
+t7 <- vr_reception(plays(x), by = "player", team = noi, style = "ov1")
 # ATTACK
-t8 <- vr_attack(x, by = "set", team_select = noi)
-t9 <- vr_attack(x, by = "player", team_select = noi)
-t10 <- vr_freeball(x, by = "set", team_select = noi)
-t11 <- vr_freeball(x, by = "player", team_select = noi)
+t8 <- vr_attack(plays(x), by = "set", team = noi, style = "ov1")
+t9 <- vr_attack(plays(x), by = "player", team = noi, style = "ov1")
+t10 <- vr_freeball(x, by = "set", team = noi)
+t11 <- vr_freeball(x, by = "player", team = noi)
 # BLOCK
-t12 <- vr_block(x, by = "set", team_select = noi)
-t13 <- vr_block(x, by = "player", team_select = noi)
+t12 <- vr_block(plays(x), by = "set", team = noi, style = "ov1")
+t13 <- vr_block(plays(x), by = "player", team = noi, style = "ov1")
 ######################
 # TABLE
 y <- plays(x)
