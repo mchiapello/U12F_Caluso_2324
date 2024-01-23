@@ -266,7 +266,7 @@ vr_score_evplot(x, with_summary = TRUE, use_icons = TRUE, font_size = 16)
 :::
 
 ::: grid
-::: g-col-12
+::: g-col-9
 ```{r}
 if(x$meta$teams$team[1] == "BCV Caluso"){
   cal <- x$meta$players_h
@@ -696,7 +696,7 @@ t1 %>%
         Tot = html("Pts")) %>% 
     cols_align(
     align = "center") %>% 
-    tab_header(title = paste0(noi)) %>% 
+    tab_header(title = paste0(loro)) %>% 
     tab_options(table.width = px(700),
                 row.striping.include_table_body = TRUE) %>% 
     tab_style(style = cell_borders(sides = "left",
