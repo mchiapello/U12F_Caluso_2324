@@ -61,7 +61,7 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 # Link Youtube video with scout
 dvw <- dir_ls(out, regexp = "dvw$")
 x <- dv_read(dvw)
-dv_meta_video(x) <- "https://youtu.be/zl00WbDBg-U"
+dv_meta_video(x) <- "https://youtu.be/pcCy_XVH7WE"
 dv_write(x, dvw)
 file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"), overwrite = TRUE)
 

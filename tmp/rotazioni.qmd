@@ -11,6 +11,7 @@ execute:
 
 ```{r}
 library(tidyverse)
+library(gt)
 add <- function(x){
   tmp <- x$lab
   x |> 
@@ -47,12 +48,12 @@ grid_colour <- "black"
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(4,6,16,15,12,5), 
+       lab = c(6,15,13,8,4,7), 
        rot = "R1") 
 
-x2 <- add(x)
+x1 <- add(x)
 
-x2 |> 
+x1 |> 
   ggplot(aes(x, y, label = lab)) +
   annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
            ymin = 0.5, ymax = 2.5, 
@@ -80,7 +81,7 @@ x2 |>
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(4,8,6,2,1,7), 
+       lab = c(6,15,3,17, 4, 12), 
        rot = "R1") 
 
 x2 <- add(x)
@@ -114,12 +115,12 @@ x2 |>
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(4,15,17,6,3,11), 
+       lab = c(6,2,1,5,4,16), 
        rot = "R1") 
 
-x2 <- add(x)
+x3 <- add(x)
 
-x2 |> 
+x3 |> 
   ggplot(aes(x, y, label = lab)) +
   annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
            ymin = 0.5, ymax = 2.5, 
@@ -149,25 +150,41 @@ x2 |>
 players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE) |> 
   arrange(numero)
 
-players |> 
+gio <- x1 |> 
+  bind_rows(x2) |> 
+  # bind_rows(x2b) |> 
+  bind_rows(x3) |> 
+  mutate(col = "X") |> 
+  select(numero = lab, col) |> 
+  unique()
+
+gio1 <- players |> 
   select(cognome, nome, numero) |> 
+  filter(!numero %in% c(11)) |>
+  left_join(gio)
+  
+gio1 |> 
   slice(1:7) |> 
   gt::gt() |> 
-  gt::tab_options(table.font.size = 12)
+  gt::tab_options(table.font.size = 12) #|> 
+  # gt::tab_style(
+  #   style = cell_fill(color = "lightgreen"),
+  #   locations = cells_body(rows = col == "red")) |> 
+  #  cols_hide(columns = c(col))
 
 ```
 :::
 
 ::: g-col-4
 ```{r}
-players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE) |> 
-  arrange(numero)
-
-players |> 
-  select(cognome, nome, numero) |> 
-    slice(8:14) |> 
+gio1 |> 
+  slice(8:14) |> 
   gt::gt() |> 
-  gt::tab_options(table.font.size = 12)
+  gt::tab_options(table.font.size = 12) #|> 
+  # gt::tab_style(
+  #   style = cell_fill(color = "lightgreen"),
+  #   locations = cells_body(rows = col == "red")) |> 
+  #  cols_hide(columns = c(col))
 
 ```
 :::
