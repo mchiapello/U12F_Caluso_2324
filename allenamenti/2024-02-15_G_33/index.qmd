@@ -1,0 +1,23 @@
+---
+date: 02/15/2024
+categories: ['U12F', '2023-2024', 'In-season']
+params:
+  palestra: 'Ubertini'
+  date: '15/02/2024'
+  allenamento: '33'
+  assenti: ['Deluca', 'Budau', 'LaMonaca']
+  vincitori: ['Boni', 'Mauro', 'Chimineti']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.8
+  voto: 0.8
+  url: https://youtu.be/HPHTN9LlpRI
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Ricezione
+{{< include ../../_contents/_allenamento.qmd >}}
