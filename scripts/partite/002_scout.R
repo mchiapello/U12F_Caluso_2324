@@ -26,8 +26,8 @@ saveRDS(refx, paste0(out, "/mrefx.RDS"))
 
 ## enter the team lineups for set 1
 x <- dv_set_lineups(x, set_number = 1, 
-                    lineups = list(c(61,67,69,70,65,60), 
-                                   c(16,15,12,5,4,6)), 
+                    lineups = list(c(10,7,4,8,1,3), 
+                                   c(12,4,7,13,15,6)), 
                     setter_positions = c(1, 1))
 
 # Subset the attacks
