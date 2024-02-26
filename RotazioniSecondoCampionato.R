@@ -4,9 +4,9 @@ library(gtExtras)
 
 # Create the tibble
 volleyball_schedule <- tibble(
-  Match = c("20240224", "20240224", "20240224", "20240323", "20240323", "20240323", "20240309", "20240309", "20240309", "20240316", "20240316", "20240316", 
-            "20240323", "20240323", "20240323", "20240406", "20240406", "20240406", "20240413", "20240413", "20240413", "20240420", "20240420", "20240420", 
-            "20240427", "20240427", "20240427", "20240505", "20240505", "20240505"),
+  Match = c("XA", "XA", "XA", "XB", "XB", "XB", "XC", "XC", "XC", "XD", "XD", "XD", 
+            "XE", "XE", "XE", "XF", "XF", "XF", "XG", "XG", "XG", "XH", "XH", "XH", 
+            "XI", "XI", "XI", "XL", "XL", "XL"),
   Set = rep(1:3, 10),
   Giocatore_1 = "Isabella",
   Giocatore_2 = "Adele",
@@ -119,5 +119,6 @@ volleyball_schedule |>
   unique() |> 
   pivot_wider(names_from = Match,
               values_from = Giocatore) |> 
+  select(Name, XA, XE, XB, XC,XD,XG,XF,XI,XH,XL) |> 
   gt()
 
