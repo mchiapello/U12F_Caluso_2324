@@ -4,13 +4,22 @@ library(gtExtras)
 
 # Create the tibble
 volleyball_schedule <- tibble(
-  Match = c("20240224", "20240224", "20240224", "20240302", "20240302", "20240302", "20240309", "20240309", "20240309", "20240316", "20240316", "20240316", 
+  Match = c("20240224", "20240224", "20240224", "20240323", "20240323", "20240323", "20240309", "20240309", "20240309", "20240316", "20240316", "20240316", 
             "20240323", "20240323", "20240323", "20240406", "20240406", "20240406", "20240413", "20240413", "20240413", "20240420", "20240420", "20240420", 
             "20240427", "20240427", "20240427", "20240505", "20240505", "20240505"),
   Set = rep(1:3, 10),
   Giocatore_1 = "Isabella",
   Giocatore_2 = "Adele",
-  Giocatore_3 = "Sharon B",
+  Giocatore_3 = c("Sharon B", "Sharon B", "Sharon B", 
+                  "Martina", "Martina", "Martina", 
+                  "Sharon B", "Sharon B", "Sharon B", 
+                  "Sharon B", "Sharon B", "Sharon B", 
+                  "Sharon B", "Sharon B","Sharon B",
+                  "Sharon B", "Sharon B", "Sharon B", 
+                  "Sharon B", "Sharon B", "Sharon B", 
+                  "Arianna G", "Arianna G", "Arianna G",  
+                  "Sharon B", "Sharon B", "Sharon B", 
+                  "Valeria", "Valeria", "Valeria"),
   Giocatore_4 = c("Arianna T", "Arianna T", "Sharon M", 
                "Sharon M", "Sara", "Sara", 
                "Martina", "Martina", "Margherita", 
@@ -100,3 +109,15 @@ tmp |>
   select(-data) |>
   ungroup() |>
   gt()
+
+volleyball_schedule |>
+  pivot_longer(cols = starts_with("Gio"),
+               names_to = "Giocatore",
+               values_to = "Name") |> 
+  select(-Set) |> 
+  mutate(Giocatore = "X") |> 
+  unique() |> 
+  pivot_wider(names_from = Match,
+              values_from = Giocatore) |> 
+  gt()
+

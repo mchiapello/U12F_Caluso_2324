@@ -2,9 +2,11 @@ library(tidyverse)
 library(gt)
 library(gtExtras)
 
-df <- read_csv("tmp/calendario.csv")
+df <- read_csv("tmp/U12_COPPA.csv") |> 
+  mutate(data = str_replace(data, "Sun", "dom"),
+         data = str_replace(data, "Sat", "sab"))
 # Nostre partite
-noi <- "BASSO CANAVESE VOLLEY GIALLA"
+noi <- "Basso Canavese VolleyY Gialla"
 df  |> 
   filter(`Home Team` == noi | `Away Team` == noi)  |> 
   # slice(7:10) |>
@@ -26,4 +28,4 @@ df |>
          "Location" = luogo)  |>  
   select(Subject, `Start Date`, `End Date`, `Start Time`, `End Time`, 
          Description, Location) %>% 
-  write_csv("tmp/calendarioNOSTRO2023.csv")
+  write_csv("tmp/calendarioNOSTRO2023_v2.csv")

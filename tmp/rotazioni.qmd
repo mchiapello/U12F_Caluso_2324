@@ -1,6 +1,6 @@
 ---
 date: 01/18/2024
-categories: ['U12F', '2023-2024', 'Ritorno']
+categories: ['U12F', '2023-2024', 'Andata 2 campionato']
 execute:
   echo: false
   warning: false
@@ -48,7 +48,7 @@ grid_colour <- "black"
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(6,15,13,8,4,7), 
+       lab = c(4,7,13,15,6,"12"), 
        rot = "R1") 
 
 x1 <- add(x)
@@ -81,7 +81,7 @@ x1 |>
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(6,15,3,17, 4, 12), 
+       lab = c(4,17,8,6,11,"15"), 
        rot = "R1") 
 
 x2 <- add(x)
@@ -108,6 +108,7 @@ x2 |>
 ```
 
 
+
 ### Set 3
 
 ```{r}
@@ -115,7 +116,7 @@ x2 |>
 #| fig-height: 1
 x <- tibble(x = c(3, 3, 2, 1, 1, 2),
        y = c(1, 2, 2, 2, 1, 1),
-       lab = c(6,2,1,5,4,16), 
+       lab = c(4,"7\n(12)",13,8,"11\n(17)",6), 
        rot = "R1") 
 
 x3 <- add(x)
@@ -141,29 +142,29 @@ x3 |>
 
 ```
 
-
 ### Elenco atlete
 
 ::: grid
 ::: g-col-4
 ```{r}
 players <- readr::read_csv(paste0(here::here(), "/data/elencoAtlete.csv"), show_col_types = FALSE) |> 
-  arrange(numero)
+  arrange(numero) |> 
+  select(cognome, nome, numero)
 
-gio <- x1 |> 
-  bind_rows(x2) |> 
-  # bind_rows(x2b) |> 
-  bind_rows(x3) |> 
-  mutate(col = "X") |> 
-  select(numero = lab, col) |> 
-  unique()
-
-gio1 <- players |> 
-  select(cognome, nome, numero) |> 
-  filter(!numero %in% c(11)) |>
-  left_join(gio)
+# gio <- x1 |> 
+#   bind_rows(x2) |> 
+#   # bind_rows(x2b) |> 
+#   bind_rows(x3) |> 
+#   mutate(col = "X") |> 
+#   select(numero = lab, col) |> 
+#   unique()
+# 
+# gio1 <- players |> 
+#   select(cognome, nome, numero) |> 
+#   filter(!numero %in% c(5,2,16,3,1)) |>
+#   left_join(gio)
   
-gio1 |> 
+players |> 
   slice(1:7) |> 
   gt::gt() |> 
   gt::tab_options(table.font.size = 12) #|> 
@@ -177,7 +178,7 @@ gio1 |>
 
 ::: g-col-4
 ```{r}
-gio1 |> 
+players |> 
   slice(8:14) |> 
   gt::gt() |> 
   gt::tab_options(table.font.size = 12) #|> 
