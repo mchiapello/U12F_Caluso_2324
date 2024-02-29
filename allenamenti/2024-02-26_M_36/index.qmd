@@ -1,0 +1,24 @@
+---
+date: 02/26/2024
+categories: ['U12F', '2023-2024', 'In-season']
+params:
+  palestra: 'Ubertini'
+  date: '26/02/2024'
+  allenamento: '36'
+  assenti: ['Mauro']
+  vincitori: ['']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.8
+  voto: 0.8
+  url: https://youtu.be/nuf39ASBTa0
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Difesa, Contrattacco, Fase Break
+{{< include ../../_contents/_allenamento.qmd >}}
+{{< include ../../_contents/_misurazioni.qmd >}}
