@@ -110,7 +110,7 @@ tmp |>
   ungroup() |>
   gt()
 
-volleyball_schedule |>
+vs1 <- volleyball_schedule |>
   pivot_longer(cols = starts_with("Gio"),
                names_to = "Giocatore",
                values_to = "Name") |> 
@@ -120,8 +120,12 @@ volleyball_schedule |>
   pivot_wider(names_from = Match,
               values_from = Giocatore) %>%
   replace(is.na(.), 0) |> 
+  select(Name, XA, XG, XC, XB,XD,XE,XF,XL,XH,XI)
+
+column_name <- names(vs1)[11]
+vs1 |> 
+  mutate(!!column_name := .data[[column_name]] + 0) |> 
   rowwise() |> 
   mutate(Tot = sum(c_across(starts_with("X")))) |> 
-  select(Name, XA, XG, XC, XB,XD,XE,XF,XL,XH,XI, Tot) |> 
   gt()
 
