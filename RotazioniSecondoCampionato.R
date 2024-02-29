@@ -115,10 +115,13 @@ volleyball_schedule |>
                names_to = "Giocatore",
                values_to = "Name") |> 
   select(-Set) |> 
-  mutate(Giocatore = "X") |> 
+  mutate(Giocatore = 1) |> 
   unique() |> 
   pivot_wider(names_from = Match,
-              values_from = Giocatore) |> 
-  select(Name, XA, XE, XB, XC,XD,XG,XF,XI,XH,XL) |> 
+              values_from = Giocatore) %>%
+  replace(is.na(.), 0) |> 
+  rowwise() |> 
+  mutate(Tot = sum(c_across(starts_with("X")))) |> 
+  select(Name, XA, XG, XC, XB,XD,XE,XF,XL,XH,XI, Tot) |> 
   gt()
 
