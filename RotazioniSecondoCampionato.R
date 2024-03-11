@@ -145,6 +145,7 @@ tibble(Nome = vs1$Name,
        "G8" = vs1$XL,
        "G9" = vs1$XI,
        "G10" = vs1$XH) |> 
+  janitor::adorn_totals("row") |> 
   rowwise() |> 
   mutate(Tot = sum(c_across(starts_with("G")))) |> 
   gt() |> 
@@ -176,4 +177,9 @@ tibble(Nome = vs1$Name,
   data_color(
     columns = G3:G4, # Replace with your column names
     colors = c("#FFEC5C")
-  )
+  ) |> 
+  data_color(
+    columns = Tot, # Replace with your column names
+    colors = c("#28403D")
+  ) 
+)
