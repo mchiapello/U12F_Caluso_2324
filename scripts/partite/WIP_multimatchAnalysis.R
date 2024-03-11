@@ -398,8 +398,36 @@ s1 |>
        y = "Rates")
 
 
+################################################################################
+scale_vector <- function(vec) {
+  min_val <- min(vec)
+  max_val <- max(vec) * 1.1
+  
+  # Handle cases where all numbers are negative
+  if (max_val <= 0) {
+    scaled_vec <- -1 * (vec - min_val) / (max_val - min_val) * 10
+  } else {
+    scaled_vec <- (vec - min_val) / (max_val - min_val) * 10
+  }
+  
+  return(scaled_vec)
+}
 
 
+serve_score <- px |> 
+  filter(team == "BCV Caluso") |>
+  filter(skill == "Serve") |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("Negative, opponent free attack",
+                                                   "OK, no first tempo possible") ~ "Negative",
+                                 evaluation %in% c("Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 TRUE ~ evaluation)) |> 
+  count(player_name, evaluation2) |> 
+  mutate(n = ifelse(evaluation2 %in% c("Error", "Negative"), n * -1, n * 1)) |> 
+  group_by(player_name) |> 
+  summarise(Serve_score = sum(n)) |> 
+  mutate(Serve_score = scale_vector(Serve_score))
+  
 
 
 
