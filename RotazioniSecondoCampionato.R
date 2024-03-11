@@ -62,53 +62,53 @@ custom_css <- "
 </style>
 "
 
-dd <- volleyball_schedule |>
-  mutate(Match = lubridate::ymd(Match),
-         Match = paste0(lubridate::day(Match), " ", lubridate::month(Match, label = TRUE)),
-         Match = factor(Match, levels = c("24 Feb", "2 Mar", "9 Mar", "16 Mar", "23 Mar", "6 Apr",
-                                        "13 Apr", "20 Apr", "27 Apr", "5 May"))) |>
-  group_by(Match) |>
-  gt()|>
-  tab_header(
-    title = md("**UISP Under12F 2023/2024**"),
-    subtitle = "Organizzazione delle partite della seconda fase"
-  )
+# dd <- volleyball_schedule |>
+#   mutate(Match = lubridate::ymd(Match),
+#          Match = paste0(lubridate::day(Match), " ", lubridate::month(Match, label = TRUE)),
+#          Match = factor(Match, levels = c("24 Feb", "2 Mar", "9 Mar", "16 Mar", "23 Mar", "6 Apr",
+#                                         "13 Apr", "20 Apr", "27 Apr", "5 May"))) |>
+#   group_by(Match) |>
+#   gt()|>
+#   tab_header(
+#     title = md("**UISP Under12F 2023/2024**"),
+#     subtitle = "Organizzazione delle partite della seconda fase"
+#   )
 
-htmltools::browsable(
-  htmltools::tagList(
-    htmltools::HTML(custom_css),
-    dd
-  )
-)
-
-tmp <- volleyball_schedule |>
-  pivot_longer(cols = starts_with("Gio"),
-               names_to = "Giocatore",
-               values_to = "Name") |> filter(!Name %in% c("Isabella", "Adele", "Sharon B")) |> 
-  count(Name, Match) |> 
-  select(-n) |>
-  group_by(Name) |>
-  nest()
-
-
-x <- tmp$data[[1]]
-
-
-dai <- function(x){
-  out <- x |>
-    mutate(Match = lubridate::ymd(Match),
-           data = paste0(lubridate::day(Match), " ", lubridate::month(Match, label = TRUE)),
-           data = factor(data, levels = c("24 Feb", "2 Mar", "9 Mar", "16 Mar", "23 Mar", "6 Apr",
-                                          "13 Apr", "20 Apr", "27 Apr", "5 May"))) |>
-    summarise(Data = paste(data, collapse = ", "))
-}
-
-tmp |>
-  mutate(Data = map(data, dai)) |>
-  unnest(Data) |>
-  select(-data) |>
-  ungroup() |>
-  gt()
+# htmltools::browsable(
+#   htmltools::tagList(
+#     htmltools::HTML(custom_css),
+#     dd
+#   )
+# )
+# 
+# tmp <- volleyball_schedule |>
+#   pivot_longer(cols = starts_with("Gio"),
+#                names_to = "Giocatore",
+#                values_to = "Name") |> filter(!Name %in% c("Isabella", "Adele", "Sharon B")) |> 
+#   count(Name, Match) |> 
+#   select(-n) |>
+#   group_by(Name) |>
+#   nest()
+# 
+# 
+# x <- tmp$data[[1]]
+# 
+# 
+# dai <- function(x){
+#   out <- x |>
+#     mutate(Match = lubridate::ymd(Match),
+#            data = paste0(lubridate::day(Match), " ", lubridate::month(Match, label = TRUE)),
+#            data = factor(data, levels = c("24 Feb", "2 Mar", "9 Mar", "16 Mar", "23 Mar", "6 Apr",
+#                                           "13 Apr", "20 Apr", "27 Apr", "5 May"))) |>
+#     summarise(Data = paste(data, collapse = ", "))
+# }
+# 
+# tmp |>
+#   mutate(Data = map(data, dai)) |>
+#   unnest(Data) |>
+#   select(-data) |>
+#   ungroup() |>
+#   gt()
 
 vs1 <- volleyball_schedule |>
   pivot_longer(cols = starts_with("Gio"),
@@ -124,8 +124,56 @@ vs1 <- volleyball_schedule |>
 
 column_name <- names(vs1)[11]
 vs1 |> 
-  mutate(!!column_name := .data[[column_name]] + 0) |> 
+  # mutate(!!column_name := .data[[column_name]] + 0) |>
   rowwise() |> 
   mutate(Tot = sum(c_across(starts_with("X")))) |> 
   gt()
 
+
+################################################################################
+# Partite giocate
+
+
+tibble(Nome = vs1$Name,
+       "G1" = vs1$XA,
+       "G2" = c(0,0,1,0,1,1,0,0,1,1,1,1,1,1),
+       "G3" = vs1$XC,
+       "G4" = c(1,1,0,1,0,0,1,1,1,0,1,1,1,0),
+       "G5" = c(1,1,1,0,1,0,1,1,1,1,1,0,0,0),
+       "G6" = vs1$XE,
+       "G7" = vs1$XF,
+       "G8" = vs1$XL,
+       "G9" = vs1$XI,
+       "G10" = vs1$XH) |> 
+  rowwise() |> 
+  mutate(Tot = sum(c_across(starts_with("G")))) |> 
+  gt() |> 
+  cols_label(
+    "G1" = md("Allotreb<br>(24/02)"),
+    "G2" = md("Canavolley<br>(09/03)"),
+    "G3" = md("AltoCanavese<br>(16/03)"),
+    "G4" = md("Sangone<br>(17/03)"),
+    "G5" = md("Fortitudo<br>(23/03)"),
+    "G6" = md("Allotreb<br>(06/04)"),
+    "G7" = md("Sangone<br>(13/04)"),
+    "G8" = md("Canavolley<br>(20/04)"),
+    "G9" = md("AltoCanavese<br>(05/05)"),
+    "G10" = md("Fortitudo<br>(11/05)")) |> 
+  tab_style(
+    style = cell_text(align = "center"),
+    list(
+      cells_column_labels(),        # Target column headers
+      cells_body())                 # Target the data rows
+  ) |> 
+  data_color(
+    columns = c(G1, G2), # Replace with your column names
+    colors = c("#FF5A33")
+  ) |> 
+  data_color(
+    columns = G5:G10, # Replace with your column names
+    colors = c("#44803F")
+  ) |> 
+  data_color(
+    columns = G3:G4, # Replace with your column names
+    colors = c("#FFEC5C")
+  )
