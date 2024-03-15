@@ -1,0 +1,773 @@
+---
+title: "Foglio Gara: Frassati - BCV Caluso"
+date: 01/13/2023
+categories: ['U12F', '2023-2024', 'Primo Campionato', 'Ritorno']
+format:
+  html:
+    toc: false
+    theme: journal
+    page-layout: article
+    number-sections: false
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+#| include: false
+library(tidyverse)
+library(datavolley)
+library(gt)
+library(gtExtras)
+library(patchwork)
+library(volleyreport)
+source(paste0(here::here(), "/scripts/999_utils.R"))
+# Read data
+file <- fs::dir_ls(paste0(here::here(), "/partite/2023-11-17_Frassati"), 
+                   regexp = "dvw$")
+x <- dv_read(file)
+noi <- "BCV Caluso"
+loro <- teams(x)[teams(x) != noi]
+px <- plays(x)
+```
+
+## Match up
+
+```{r}
+if(which(x$meta$teams$team == noi) == 1){
+    loc <- "home"
+  } else {
+    loc <- "visiting"
+  }
+set <- 1
+tmp <- plays(x) |> 
+  drop_na(team) |> 
+  filter(set_number == set) |> 
+  slice(1) |> 
+  select(matches("home_p[123456]"), matches("visiting_p[123456]")) |> 
+   pivot_longer(cols = everything(),
+                names_to = "Position",
+                values_to = "Player") |> 
+  mutate(team = ifelse(grepl("home", Position), x$meta$teams$team[1], x$meta$teams$team[2]), 
+         x = case_when(grepl("p1", Position) & team == noi ~ 3,
+                       grepl("p2", Position) & team == noi ~ 3,
+                       grepl("p3", Position) & team == noi ~ 2,
+                       grepl("p4", Position) & team == noi ~ 1,
+                       grepl("p5", Position) & team == noi ~ 1,
+                       grepl("p6", Position) & team == noi ~ 2,
+                       grepl("p1", Position) & team != noi ~ 1,
+                       grepl("p2", Position) & team != noi ~ 1,
+                       grepl("p3", Position) & team != noi ~ 2,
+                       grepl("p4", Position) & team != noi ~ 3,
+                       grepl("p5", Position) & team != noi ~ 3,
+                       grepl("p6", Position) & team != noi ~ 2),
+         y = case_when(grepl("p1", Position) & team == noi ~ 1,
+                       grepl("p2", Position) & team == noi ~ 2,
+                       grepl("p3", Position) & team == noi ~ 2,
+                       grepl("p4", Position) & team == noi ~ 2,
+                       grepl("p5", Position) & team == noi ~ 1,
+                       grepl("p6", Position) & team == noi ~ 1,
+                       grepl("p1", Position) & team != noi ~ 4,
+                       grepl("p2", Position) & team != noi ~ 3,
+                       grepl("p3", Position) & team != noi ~ 3,
+                       grepl("p4", Position) & team != noi ~ 3,
+                       grepl("p5", Position) & team != noi ~ 4,
+                       grepl("p6", Position) & team != noi ~ 4))
+```
+
+
+## Summary
+
+### `r paste0("Team: ", noi)`
+```{r}
+if(which(x$meta$team$team == noi) == 1){
+  t1 <- x$meta$players_h %>% 
+      select(number, name, starting_position_set1:starting_position_set5) %>% 
+      select(where(~sum(!is.na(.x)) > 0)) %>% 
+      rename_with(~str_remove(.x, "starting_position_")) |> 
+      filter(if_any(starts_with("set"), ~ . != "-"))
+  
+  #####################
+  # POINTS
+  t2 <- vr_points(x, by = "set", team_select = noi)
+  t3 <- vr_points(x, by = "player", team_select = noi)
+  # SERVE
+  t4 <- vr_serve(x, by = "set", team_select = noi)
+  t5 <- vr_serve(x, by = "player", team_select = noi)
+  # RECEPTION
+  t6 <- vr_reception(x, by = "set", team_select = noi)
+  t7 <- vr_reception(x, by = "player", team_select = noi)
+  # ATTACK
+  t8 <- vr_attack(x, by = "set", team_select = noi)
+  t9 <- vr_attack(x, by = "player", team_select = noi)
+  t10 <- vr_freeball(x, by = "set", team_select = noi)
+  t11 <- vr_freeball(x, by = "player", team_select = noi)
+  # BLOCK
+  t12 <- vr_block(x, by = "set", team_select = noi)
+  t13 <- vr_block(x, by = "player", team_select = noi)
+  ######################
+  # TABLE
+  y <- plays(x)
+  t1 %>% 
+      left_join(y %>% 
+                    dplyr::select(player_id, player_name) %>% 
+                    filter(!is.na(player_id)) %>% 
+                    distinct(), by = c("name" = "player_name"))  %>% 
+  bind_rows(tibble(name = "Team total",
+                   player_id = "Team total")) |>  
+      left_join(t3, by = "player_id") %>% 
+      left_join(t5, by = "player_id") %>%
+      left_join(t7, by = "player_id") %>%
+      left_join(t9, by = "player_id") %>%
+      left_join(t11, by = "player_id") %>%
+      left_join(t13, by = "player_id") %>%
+      select(-player_id) %>% 
+      mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
+      mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
+      ### GT TABLE
+      gt(id = "four") %>%
+      # tab_header(
+      #   title = paste0(noi)) %>% 
+      tab_spanner(
+          label = "Punti",
+          columns = Tot.x:`W-L`) %>% 
+      tab_spanner(
+          label = "Battuta",
+          columns = Tot.y:Pos) %>% 
+      tab_spanner(
+          label = "Ricezione",
+          columns = Tot.x.x:`(Exc%)`) %>% 
+      tab_spanner(
+          label = "Attacco",
+          columns = Tot.y.y:`Pts%`) %>% 
+      tab_spanner(
+          label = "Freeball",
+          columns = Tot:Err.y.y) %>%
+      tab_spanner(
+          label = "Muro",
+          columns = Punto) %>%
+      cols_label(
+          Tot.x = html("<strong>Tot</strong>"),
+          Nerr = html("<strong>Err</strong>"),
+          `W-L` = html("D"),
+          Tot.y = html("<strong>Tot</strong>"),
+          Err.x = html("<strong>Err</strong>"),
+          Pts.x = html("Pts"),
+          Tot.x.x = html("<strong>Tot</strong>"),
+          Err.y = html("<strong>Err</strong>"),
+          Tot.y.y = html("<strong>Tot</strong>"),
+          Err.x.x = html("<strong>Err</strong>"),
+          Pts.y = html("Pts"),
+          Tot = html("<strong>Tot</strong>"),
+          Err.y.y = html("<strong>Err</strong>"),
+          Punto = html("Pts")) %>% 
+      cols_align(
+      align = "center") %>% 
+      tab_options(table.width = px(700),
+                  row.striping.include_table_body = TRUE) %>% 
+      tab_style(style = cell_borders(sides = "left",
+                                     color = "grey50",
+                                     weight = px(.9),
+                                     style = "solid"),
+                locations = cells_body(columns = starts_with("To"),
+                                       rows = everything())) %>% 
+      tab_style(style = cell_borders(sides = "left",
+                                     color = "grey50",
+                                     weight = px(.9),
+                                     style = "solid"),
+                locations = cells_body(columns = starts_with("set1"),
+                                       rows = everything())) %>% 
+      tab_style(style = cell_borders(sides = "left",
+                                     color = "grey50",
+                                     weight = px(.9),
+                                     style = "solid"),
+                locations = cells_body(columns = last_col(),
+                                       rows = everything())) %>% 
+      opt_css(
+      css = "
+      #four .gt_col_heading {
+        padding: 2px 3px;
+        font-size: 9px;
+      }
+       #four .gt_column_spanner {
+        padding: 0px 0px;
+        font-size: 9px;
+      }
+      #four .gt_row {
+        padding: 2px 3px;
+        font-size: 9px;
+      }
+      #four .gt_col_heading {
+        text-align: center !important;
+      }
+      ") 
+} else {
+    t1 <- x$meta$players_v %>% 
+      select(number, name, starting_position_set1:starting_position_set5) %>% 
+      select(where(~sum(!is.na(.x)) > 0)) %>% 
+      rename_with(~str_remove(.x, "starting_position_")) |> 
+      filter(if_any(starts_with("set"), ~ . != "-"))
+  
+  #####################
+  # POINTS
+  t2 <- vr_points(x, by = "set", team_select = noi)
+  t3 <- vr_points(x, by = "player", team_select = noi)
+  # SERVE
+  t4 <- vr_serve(x, by = "set", team_select = noi)
+  t5 <- vr_serve(x, by = "player", team_select = noi)
+  # RECEPTION
+  t6 <- vr_reception(x, by = "set", team_select = noi)
+  t7 <- vr_reception(x, by = "player", team_select = noi)
+  # ATTACK
+  t8 <- vr_attack(x, by = "set", team_select = noi)
+  t9 <- vr_attack(x, by = "player", team_select = noi)
+  t10 <- vr_freeball(x, by = "set", team_select = noi)
+  t11 <- vr_freeball(x, by = "player", team_select = noi)
+  # BLOCK
+  t12 <- vr_block(x, by = "set", team_select = noi)
+  t13 <- vr_block(x, by = "player", team_select = noi)
+  ######################
+  # TABLE
+  y <- plays(x)
+  t1 %>% 
+      left_join(y %>% 
+                    dplyr::select(player_id, player_name) %>% 
+                    filter(!is.na(player_id)) %>% 
+                    distinct(), by = c("name" = "player_name")) %>% 
+    bind_rows(tibble(name = "Team total",
+                     player_id = "Team total")) |> 
+      left_join(t3, by = "player_id") %>% 
+      left_join(t5, by = "player_id") %>%
+      left_join(t7, by = "player_id") %>%
+      left_join(t9, by = "player_id") %>%
+      left_join(t11, by = "player_id") %>%
+      left_join(t13, by = "player_id") %>%
+      select(-player_id) %>% 
+      mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
+      mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
+      ### GT TABLE
+      gt(id = "four") %>%
+      # tab_header(
+      #   title = paste0(noi)) %>% 
+      tab_spanner(
+          label = "Punti",
+          columns = Tot.x:`W-L`) %>% 
+      tab_spanner(
+          label = "Battuta",
+          columns = Tot.y:Pos) %>% 
+      tab_spanner(
+          label = "Ricezione",
+          columns = Tot.x.x:`(Exc%)`) %>% 
+      tab_spanner(
+          label = "Attacco",
+          columns = Tot.y.y:`Pts%`) %>% 
+      tab_spanner(
+          label = "Freeball",
+          columns = Tot:Err.y.y) %>%
+      tab_spanner(
+          label = "Muro",
+          columns = Punto) %>%
+      cols_label(
+          Tot.x = html("<strong>Tot</strong>"),
+          Nerr = html("<strong>Err</strong>"),
+          `W-L` = html("D"),
+          Tot.y = html("<strong>Tot</strong>"),
+          Err.x = html("<strong>Err</strong>"),
+          Pts.x = html("Pts"),
+          Tot.x.x = html("<strong>Tot</strong>"),
+          Err.y = html("<strong>Err</strong>"),
+          Tot.y.y = html("<strong>Tot</strong>"),
+          Err.x.x = html("<strong>Err</strong>"),
+          Pts.y = html("Pts"),
+          Tot = html("<strong>Tot</strong>"),
+          Err.y.y = html("<strong>Err</strong>"),
+          Punto = html("Pts")) %>% 
+      cols_align(
+      align = "center") %>% 
+      tab_options(table.width = px(700),
+                  row.striping.include_table_body = TRUE) %>% 
+      tab_style(style = cell_borders(sides = "left",
+                                     color = "grey50",
+                                     weight = px(.9),
+                                     style = "solid"),
+                locations = cells_body(columns = starts_with("To"),
+                                       rows = everything())) %>% 
+      tab_style(style = cell_borders(sides = "left",
+                                     color = "grey50",
+                                     weight = px(.9),
+                                     style = "solid"),
+                locations = cells_body(columns = starts_with("set1"),
+                                       rows = everything())) %>% 
+      tab_style(style = cell_borders(sides = "left",
+                                     color = "grey50",
+                                     weight = px(.9),
+                                     style = "solid"),
+                locations = cells_body(columns = last_col(),
+                                       rows = everything())) %>% 
+      opt_css(
+      css = "
+      #four .gt_col_heading {
+        padding: 2px 3px;
+        font-size: 9px;
+      }
+       #four .gt_column_spanner {
+        padding: 0px 0px;
+        font-size: 9px;
+      }
+      #four .gt_row {
+        padding: 2px 3px;
+        font-size: 9px;
+      }
+      #four .gt_col_heading {
+        text-align: center !important;
+      }
+      ") 
+}
+
+```
+
+### `r paste0("Team: ", loro)`
+```{r}
+if(which(x$meta$team$team == loro) == 1){
+  t1 <- x$meta$players_h %>% 
+    select(number, name, starting_position_set1:starting_position_set5) %>% 
+    select(where(~sum(!is.na(.x)) > 0)) %>% 
+    rename_with(~str_remove(.x, "starting_position_")) |> 
+      filter(if_any(starts_with("set"), ~ . != "-"))
+
+#####################
+# POINTS
+t2 <- vr_points(x, by = "set", team_select = loro)
+t3 <- vr_points(x, by = "player", team_select = loro)
+# SERVE
+t4 <- vr_serve(x, by = "set", team_select = loro)
+t5 <- vr_serve(x, by = "player", team_select = loro)
+# RECEPTION
+t6 <- vr_reception(x, by = "set", team_select = loro)
+t7 <- vr_reception(x, by = "player", team_select = loro)
+# ATTACK
+t8 <- vr_attack(x, by = "set", team_select = loro)
+t9 <- vr_attack(x, by = "player", team_select = loro)
+t10 <- vr_freeball(x, by = "set", team_select = loro)
+t11 <- vr_freeball(x, by = "player", team_select = loro)
+# BLOCK
+t12 <- vr_block(x, by = "set", team_select = loro)
+t13 <- vr_block(x, by = "player", team_select = loro)
+######################
+# TABLE
+y <- plays(x)
+t1 %>% 
+    left_join(y %>% 
+                  dplyr::select(player_id, player_name) %>% 
+                  filter(!is.na(player_id)) %>% 
+                  distinct(), by = c("name" = "player_name"))  %>% 
+  bind_rows(tibble(name = "Team total",
+                   player_id = "Team total")) |> 
+    left_join(t3, by = "player_id") %>% 
+    left_join(t5, by = "player_id") %>%
+    left_join(t7, by = "player_id") %>%
+    left_join(t9, by = "player_id") %>%
+    left_join(t11, by = "player_id") %>%
+    left_join(t13, by = "player_id") %>%
+    select(-player_id) %>% 
+    mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
+    mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
+    ### GT TABLE
+    gt(id = "four") %>%
+    # tab_header(
+    #   title = paste0(noi)) %>% 
+    tab_spanner(
+        label = "Punti",
+        columns = Tot.x:`W-L`) %>% 
+    tab_spanner(
+        label = "Battuta",
+        columns = Tot.y:Pos) %>% 
+    tab_spanner(
+        label = "Ricezione",
+        columns = Tot.x.x:`(Exc%)`) %>% 
+    tab_spanner(
+        label = "Attacco",
+        columns = Tot.y.y:`Pts%`) %>% 
+    tab_spanner(
+        label = "Freeball",
+        columns = Tot:Err.y.y) %>%
+    tab_spanner(
+        label = "Muro",
+        columns = Punto) %>%
+    cols_label(
+        Tot.x = html("<strong>Tot</strong>"),
+        Nerr = html("<strong>Err</strong>"),
+        `W-L` = html("D"),
+        Tot.y = html("<strong>Tot</strong>"),
+        Err.x = html("<strong>Err</strong>"),
+        Pts.x = html("Pts"),
+        Tot.x.x = html("<strong>Tot</strong>"),
+        Err.y = html("<strong>Err</strong>"),
+        Tot.y.y = html("<strong>Tot</strong>"),
+        Err.x.x = html("<strong>Err</strong>"),
+        Pts.y = html("Pts"),
+        Tot = html("<strong>Tot</strong>"),
+        Err.y.y = html("<strong>Err</strong>"),
+        Punto = html("Pts")) %>% 
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(700),
+                row.striping.include_table_body = TRUE) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("To"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("set1"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = last_col(),
+                                     rows = everything())) %>% 
+    opt_css(
+    css = "
+    #four .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 9px;
+    }
+     #four .gt_column_spanner {
+      padding: 0px 0px;
+      font-size: 9px;
+    }
+    #four .gt_row {
+      padding: 2px 3px;
+      font-size: 9px;
+    }
+    #four .gt_col_heading {
+      text-align: center !important;
+    }
+    ") 
+} else {
+  t1 <- x$meta$players_v %>% 
+    select(number, name, starting_position_set1:starting_position_set5) %>% 
+    select(where(~sum(!is.na(.x)) > 0)) %>% 
+    rename_with(~str_remove(.x, "starting_position_")) |> 
+      filter(if_any(starts_with("set"), ~ . != "-"))
+
+#####################
+# POINTS
+t2 <- vr_points(x, by = "set", team_select = loro)
+t3 <- vr_points(x, by = "player", team_select = loro)
+# SERVE
+t4 <- vr_serve(x, by = "set", team_select = loro)
+t5 <- vr_serve(x, by = "player", team_select = loro)
+# RECEPTION
+t6 <- vr_reception(x, by = "set", team_select = loro)
+t7 <- vr_reception(x, by = "player", team_select = loro)
+# ATTACK
+t8 <- vr_attack(x, by = "set", team_select = loro)
+t9 <- vr_attack(x, by = "player", team_select = loro)
+t10 <- vr_freeball(x, by = "set", team_select = loro)
+t11 <- vr_freeball(x, by = "player", team_select = loro)
+# BLOCK
+t12 <- vr_block(x, by = "set", team_select = loro)
+t13 <- vr_block(x, by = "player", team_select = loro)
+######################
+# TABLE
+y <- plays(x)
+t1 %>% 
+    left_join(y %>% 
+                  dplyr::select(player_id, player_name) %>% 
+                  filter(!is.na(player_id)) %>% 
+                  distinct(), by = c("name" = "player_name")) %>% 
+  bind_rows(tibble(name = "Team total",
+                   player_id = "Team total")) |> 
+    left_join(t3, by = "player_id") %>% 
+    left_join(t5, by = "player_id") %>%
+    left_join(t7, by = "player_id") %>%
+    left_join(t9, by = "player_id") %>%
+    left_join(t11, by = "player_id") %>%
+    left_join(t13, by = "player_id") %>%
+    select(-player_id) %>% 
+    mutate(across(starts_with("set"), ~replace_na(.x, "-"))) %>% 
+    mutate(across(where(is.numeric), ~replace_na(.x, 0))) %>% 
+    ### GT TABLE
+    gt(id = "four") %>%
+    # tab_header(
+    #   title = paste0(noi)) %>% 
+    tab_spanner(
+        label = "Punti",
+        columns = Tot.x:`W-L`) %>% 
+    tab_spanner(
+        label = "Battuta",
+        columns = Tot.y:Pos) %>% 
+    tab_spanner(
+        label = "Ricezione",
+        columns = Tot.x.x:`(Exc%)`) %>% 
+    tab_spanner(
+        label = "Attacco",
+        columns = Tot.y.y:`Pts%`) %>% 
+    tab_spanner(
+        label = "Freeball",
+        columns = Tot:Err.y.y) %>%
+    tab_spanner(
+        label = "Muro",
+        columns = Punto) %>%
+    cols_label(
+        Tot.x = html("<strong>Tot</strong>"),
+        Nerr = html("<strong>Err</strong>"),
+        `W-L` = html("D"),
+        Tot.y = html("<strong>Tot</strong>"),
+        Err.x = html("<strong>Err</strong>"),
+        Pts.x = html("Pts"),
+        Tot.x.x = html("<strong>Tot</strong>"),
+        Err.y = html("<strong>Err</strong>"),
+        Tot.y.y = html("<strong>Tot</strong>"),
+        Err.x.x = html("<strong>Err</strong>"),
+        Pts.y = html("Pts"),
+        Tot = html("<strong>Tot</strong>"),
+        Err.y.y = html("<strong>Err</strong>"),
+        Punto = html("Pts")) %>% 
+    cols_align(
+    align = "center") %>% 
+    tab_options(table.width = px(700),
+                row.striping.include_table_body = TRUE) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("To"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = starts_with("set1"),
+                                     rows = everything())) %>% 
+    tab_style(style = cell_borders(sides = "left",
+                                   color = "grey50",
+                                   weight = px(.9),
+                                   style = "solid"),
+              locations = cells_body(columns = last_col(),
+                                     rows = everything())) %>% 
+    opt_css(
+    css = "
+    #four .gt_col_heading {
+      padding: 2px 3px;
+      font-size: 9px;
+    }
+     #four .gt_column_spanner {
+      padding: 0px 0px;
+      font-size: 9px;
+    }
+    #four .gt_row {
+      padding: 2px 3px;
+      font-size: 9px;
+    }
+    #four .gt_col_heading {
+      text-align: center !important;
+    }
+    ") 
+}
+
+```
+
+
+
+
+```{r}
+grid_colour <- "black"
+tmp |> 
+  ggplot(aes(x, y, label = Player)) +
+  annotate(geom = "rect", xmin = 0.5, xmax = 3.5, 
+           ymin = 0.5, ymax = 4.5, 
+           fill = "white", 
+           colour = "black") +
+  annotate(geom = "rect", xmin = 0.3, xmax = 3.7, 
+           ymin = 2.48, ymax = 2.6, 
+           fill = grid_colour) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = 2.5, xend = 2.5, y = .5, yend = 4.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 1.5, yend = 1.5,
+           colour = grid_colour) +
+  annotate("segment", x = .5, xend = 3.5, y = 3.5, yend = 3.5,
+           colour = grid_colour) +
+  geom_text() +
+  labs(title = paste0("SET", set)) +
+  annotate("text", x = 2, y = .4, label = noi) +
+  annotate("text", x = 2, y = 4.6, label = loro) +
+  theme_void()
+
+```
+
+
+## TEST
+
+```{r}
+mc_attack <- function(x, team, by = "player", team_select = noi){
+    y <- plays(x)
+    if (by == "player") {
+        y %>% 
+            dplyr::filter(.data$team %in% team_select, 
+                          .data$player_id != "unknown player", 
+                          .data$skill == "Attack") %>% 
+            group_by(.data$player_id) %>%
+            dplyr::summarize(Tot = n(),
+                             Err = sum(.data$evaluation %eq% "Error"),
+                             Blo = sum(.data$evaluation %eq% "Blocked"),
+                             'Pts' = sum(.data$evaluation %eq% "Winning attack"),
+                             'Pts%' = paste0(round(mean(.data$evaluation %eq% "Winning attack"), 2)*100, "%")) %>%
+            bind_rows(
+                y %>% 
+                    dplyr::filter(.data$team %in% team_select, 
+                                  .data$player_id != "unknown player", 
+                                  .data$skill == "Attack") %>% 
+                    mutate(player_id = "Team total") %>%
+                    group_by(.data$player_id) %>%
+                    dplyr::summarize(Tot = n(),
+                                     Err = sum(.data$evaluation %eq% "Error"),
+                                     Blo = sum(.data$evaluation %eq% "Blocked"),
+                                     'Pts' = sum(.data$evaluation %eq% "Winning attack"),
+                                     'Pts%' = paste0(round(mean(.data$evaluation %eq% "Winning attack"), 2)*100, "%")))
+    } else if (by == "set") {
+        y %>% 
+            dplyr::filter(.data$team %in% team_select, 
+                          .data$player_id != "unknown player", 
+                          .data$skill == "Attack") %>% 
+            group_by(.data$set_number) %>%
+            dplyr::summarize(Tot = n(),
+                             Err = sum(.data$evaluation %eq% "Error"),
+                             Blo = sum(.data$evaluation %eq% "Blocked"),
+                             'Pts' = sum(.data$evaluation %eq% "Winning attack"),
+                             'Pts%' = paste0(round(mean(.data$evaluation %in% "Winning attack"), 2)*100, "%"))
+    } else if (by == "both"){
+      y %>% 
+            dplyr::filter(.data$team %in% team_select, 
+                          .data$player_id != "unknown player", 
+                          .data$skill == "Attack") %>% 
+            group_by(.data$player_id, .data$set_number) %>%
+            dplyr::summarize(Tot = n(),
+                             Err = sum(.data$evaluation %eq% "Error"),
+                             Blo = sum(.data$evaluation %eq% "Blocked"),
+                             'Pts' = sum(.data$evaluation %eq% "Winning attack"),
+                             'Pts%' = paste0(round(mean(.data$evaluation %eq% "Winning attack"), 2)*100, "%")) %>%
+            bind_rows(
+                y %>% 
+                    dplyr::filter(.data$team %in% team_select, 
+                                  .data$player_id != "unknown player", 
+                                  .data$skill == "Attack") %>% 
+                    mutate(player_id = "Team total") %>%
+                    group_by(.data$player_id, .data$set_number) %>%
+                    dplyr::summarize(Tot = n(),
+                                     Err = sum(.data$evaluation %eq% "Error"),
+                                     Blo = sum(.data$evaluation %eq% "Blocked"),
+                                     'Pts' = sum(.data$evaluation %eq% "Winning attack"),
+                                     'Pts%' = paste0(round(mean(.data$evaluation %eq% "Winning attack"), 2)*100, "%")))
+    }
+}
+mc_reception <- function(x, team, by = "player", file_type = "indoor", team_select = noi){
+    y <- plays(x)
+    if (by == "player"){
+        y %>% 
+            dplyr::filter(.data$team %in% team_select, .data$player_id != "unknown player", 
+                          .data$skill == "Reception") %>% 
+            group_by(.data$player_id) %>%
+            dplyr::summarize(Tot = n(),
+                             Err = sum(.data$evaluation %eq% "Error"),
+                             'Neg%' = paste0(round(mean(.data$evaluation_code %in% c("-", "!", "/")), 2)*100, "%"),
+                             'Pos%' = paste0(round(mean(.data$evaluation_code %in% c("+", "#", "#+")), 2)*100, "%"),
+                             '(Exc%)' = paste0("(", round(mean(.data$evaluation_code %in% c("#")), 2)*100, "%)")) %>%
+            bind_rows(
+                y %>% 
+                    dplyr::filter(.data$team %in% team_select, .data$player_id != "unknown player", 
+                                  .data$skill == "Reception") %>% 
+                    mutate(player_id = "Team total") %>%
+                    group_by(.data$player_id) %>%
+                    dplyr::summarize(Tot = n(),
+                                     Err = sum(.data$evaluation %eq% "Error"),
+                                     'Neg%' = paste0(round(mean(.data$evaluation_code %in% c("!", "/")), 2)*100, "%"),
+                                     'Pos%' = paste0(round(mean(.data$evaluation_code %in% c("+", "#", "#+")), 2)*100, "%"),
+                                     '(Exc%)' = paste0("(", round(mean(.data$evaluation_code %in% c("#")), 2)*100, "%)")))
+    } else if (by == "set") {
+        y %>% dplyr::filter(.data$team %in% team_select, .data$player_id != "unknown player", .data$skill == "Reception") %>% group_by(.data$set_number) %>%
+            dplyr::summarize(Tot = n(),
+                             Err = sum(.data$evaluation %eq% "Error"),
+                             'Pos%' = paste0(round(mean(.data$evaluation_code %in% c("+", "#", "#+")), 2)*100, "%"),
+                             'Neg%' = paste0(round(mean(.data$evaluation_code %in% c("!", "/")), 2)*100, "%"),
+                             '(Exc%)' = paste0("(", round(mean(.data$evaluation_code %in% c("#")), 2)*100, "%)"))
+    } else if (by == "both"){
+      y %>% 
+            dplyr::filter(.data$team %in% team_select, .data$player_id != "unknown player", 
+                          .data$skill == "Reception") %>% 
+            group_by(.data$player_id, .data$set_number) %>%
+            dplyr::summarize(Tot = n(),
+                             Err = sum(.data$evaluation %eq% "Error"),
+                             'Neg%' = paste0(round(mean(.data$evaluation_code %in% c("-", "!", "/")), 2)*100, "%"),
+                             'Pos%' = paste0(round(mean(.data$evaluation_code %in% c("+", "#", "#+")), 2)*100, "%"),
+                             '(Exc%)' = paste0("(", round(mean(.data$evaluation_code %in% c("#")), 2)*100, "%)")) %>%
+            bind_rows(
+                y %>% 
+                    dplyr::filter(.data$team %in% team_select, .data$player_id != "unknown player", 
+                                  .data$skill == "Reception") %>% 
+                    mutate(player_id = "Team total") %>%
+                    group_by(.data$player_id, .data$set_number) %>%
+                    dplyr::summarize(Tot = n(),
+                                     Err = sum(.data$evaluation %eq% "Error"),
+                                     'Neg%' = paste0(round(mean(.data$evaluation_code %in% c("!", "/")), 2)*100, "%"),
+                                     'Pos%' = paste0(round(mean(.data$evaluation_code %in% c("+", "#", "#+")), 2)*100, "%"),
+                                     '(Exc%)' = paste0("(", round(mean(.data$evaluation_code %in% c("#")), 2)*100, "%)")))
+    }
+}
+
+mc_attack(x, noi, by = "both") |> filter(set_number == 1)
+vr_attack(x, noi)
+
+vr_reception(x, noi)
+mc_reception(x, noi, by = "both") |> filter(set_number == 3)
+```
+
+## Dove battere
+
+
+
+### Peggiori ricevitori
+
+
+
+### Direzioni di battuta
+```{r}
+################################################################################
+# Direzione battute
+flip <- plays(x) |> 
+  filter(team == loro,
+         # set_number == 1,
+         skill == "Serve")
+
+toflip <- which(flip$start_coordinate_y < 3.5)
+
+flip[toflip, ] <- flip[toflip, ] %>%
+  mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
+         across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
+
+flip |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y, linetype = evaluation2)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+  scale_colour_manual(values = c(Ace = "darkgreen", Error = "firebrick", 
+                                 Positive = "lightgreen", Negative = "orange"),
+                      name = "Evaluation") +
+  ggcourt(labels = "") +
+  facet_wrap(vars(player_number))
+
+```
+
