@@ -9,9 +9,9 @@ source("scripts/999_functions.R")
 
 ###############################################################################
 # Create match/allenamento
-opp <- "Allotreb"
+opp <- "Sangone"
 us <- "BCV Caluso"
-date <- "2024-02-24"
+date <- "2024-03-17"
 
 pp <- ma(date = date, 
          opp = opp,
@@ -22,11 +22,11 @@ pp <- ma(date = date,
          phase = "Andata",
          home_away = FALSE,
          day_number = 1,
-         match_number = 122102,
-         set_won = c(3, 0),
-         home_away_team  = c("*", "a"),
-         won_match = c(TRUE, FALSE),
-         coach = c("Chiapello", "LiVio"),
+         match_number = 122104,
+         set_won = c(1, 2),
+         home_away_team  = c("a", "*"),
+         won_match = c(FALSE, TRUE),
+         coach = c("Chiapello", "D'Arco"),
          assistent = c("", ""))
 
 # Create variables
