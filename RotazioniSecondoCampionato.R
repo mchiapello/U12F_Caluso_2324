@@ -137,17 +137,18 @@ vs1 |>
 tibble(Nome = vs1$Name,
        "G1" = vs1$XA,
        "G2" = c(0,0,1,0,1,1,0,0,1,1,1,1,1,1),
-       "G3" = c(1,1,1,1,1,0,1,0,0,0,1,1,1,0),
-       "G4" = c(1,1,0,0,0,0,0,1,1,1,0,0,0,1),
-       "G5" = c(1,1,0,1,1,1,1,1,1,0,1,0,0,0),
-       "G6" = vs1$XE,
-       "G7" = vs1$XF,
-       "G8" = vs1$XL,
-       "G9" = vs1$XI,
-       "G10" = vs1$XH) |> 
-  janitor::adorn_totals("row") |> 
+       "G3" = c(1,1,1,1,1,1,1,0,0,0,1,1,1,0),
+       "G4" = c(1,1,0,0,0,1,0,1,1,1,0,0,0,1),
+       "G5" = c(1,1,1,1,1,0,1,1,1,1,1,0,0,0),
+       "G6" = c(1,1,0,1,1,1,0,1,1,0,0,1,1,1),
+       "G7" = c(1,1,1,1,1,0,1,1,1,1,0,0,0,1),
+       "G8" = c(1,1,1,1,0,0,1,0,1,1,1,1,1,0),
+       "G9" = c(1,1,1,1,1,1,0,0,0,0,1,1,1,1),
+       "G10" = 1) |> 
   rowwise() |> 
   mutate(Tot = sum(c_across(starts_with("G")))) |> 
+  arrange(desc(Tot)) |>
+  janitor::adorn_totals("row") |> 
   gt() |> 
   cols_label(
     "G1" = md("Allotreb<br>(24/02)"),
@@ -167,17 +168,21 @@ tibble(Nome = vs1$Name,
       cells_body())                 # Target the data rows
   ) |> 
   data_color(
-    columns = c(G1, G2), # Replace with your column names
+    columns = G1:G4, # Replace with your column names
     colors = c("#FF5A33")
   ) |> 
   data_color(
-    columns = G5:G10, # Replace with your column names
+    columns = G6:G10, # Replace with your column names
     colors = c("#44803F")
   ) |> 
   data_color(
-    columns = G3:G4, # Replace with your column names
+    columns = G5, # Replace with your column names
     colors = c("#FFEC5C")
-  ) |> 
+  ) |>
+  # data_color(
+  #   columns = G8, # Replace with your column names
+  #   colors = c("#FFEC5C")
+  # ) |>
   data_color(
     columns = Tot, # Replace with your column names
     colors = c("#28403D")
