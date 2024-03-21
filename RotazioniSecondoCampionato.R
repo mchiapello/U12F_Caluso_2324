@@ -139,7 +139,7 @@ tibble(Nome = vs1$Name,
        "G2" = c(0,0,1,0,1,1,0,0,1,1,1,1,1,1),
        "G3" = c(1,1,1,1,1,1,1,0,0,0,1,1,1,0),
        "G4" = c(1,1,0,0,0,1,0,1,1,1,0,0,0,1),
-       "G5" = c(1,1,1,1,1,0,1,1,1,1,1,0,0,0),
+       "G5" = c(1,0,1,1,1,0,1,1,1,1,1,0,0,0),
        "G6" = c(1,1,0,1,1,1,0,1,1,0,0,1,1,1),
        "G7" = c(1,1,1,1,1,0,1,1,1,1,0,0,0,1),
        "G8" = c(1,1,1,1,0,0,1,0,1,1,1,1,1,0),
@@ -169,15 +169,15 @@ tibble(Nome = vs1$Name,
   ) |> 
   data_color(
     columns = G1:G4, # Replace with your column names
-    colors = c("#FF5A33")
+    palette = c("#FF5A33")
   ) |> 
   data_color(
     columns = G6:G10, # Replace with your column names
-    colors = c("#44803F")
+    palette = c("#44803F")
   ) |> 
   data_color(
     columns = G5, # Replace with your column names
-    colors = c("#FFEC5C")
+    palette = c("#FFEC5C")
   ) |>
   # data_color(
   #   columns = G8, # Replace with your column names
@@ -185,6 +185,6 @@ tibble(Nome = vs1$Name,
   # ) |>
   data_color(
     columns = Tot, # Replace with your column names
-    colors = c("#28403D")
+    palette = c("#28403D")
   ) 
-)
+
