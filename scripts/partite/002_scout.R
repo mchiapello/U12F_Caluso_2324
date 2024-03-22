@@ -56,12 +56,12 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 
 # Update court reference
 # refx <- ovideo::ov_shiny_court_ref(video_file = video_file, t = 2800)
-# out <- "/Users/chiapell/Documents/personale/PALLAVOLO/U14F_blog_2223/data/002_Partite/2023-03-05_To.volley"
+# outT <- "/Users/chiapell/personale/PALLAVOLO/U12F_Caluso_2324/partite/2024-03-09_Canavolley"
 
 # Link Youtube video with scout
 dvw <- dir_ls(out, regexp = "dvw$")
 x <- dv_read(dvw)
-dv_meta_video(x) <- "https://youtu.be/XMuYRjpeoJ0E"
+dv_meta_video(x) <- "https://youtu.be/X8Sxqdz3spY"
 dv_write(x, dvw)
 file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"), overwrite = TRUE)
 
