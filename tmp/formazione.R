@@ -11,7 +11,7 @@ players <- read_csv("data/fond_score_calculation.csv") |>
 
 # Filter for the current match
 players <- players |> 
-  filter(grepl("Beretta|LaMonaca|Gillone|Panetto|Mauro|Torchia|Fragonas|Celeste", Nome))
+  filter(grepl("Panetto|Gerace|Deluca|Chimineti|Torchia|Fragonas|Celeste", Nome))
 
 # Weights
 weights <- c(Ricezione = 2, Battuta = 2, Attacco = 1.5, Difesa = 1.5)
@@ -22,7 +22,7 @@ for (skill in names(weights)) {
 }
 
 # Exclude SharonB and Adele for combination purposes
-other_players <- players[!players$Nome %in% c("Isabella Boni", "Adele Cireddu"), ] |> 
+other_players <- players[!players$Nome %in% c("Isabella Boni", "Sharon Beretta"), ] |> 
   mutate(players = row_number())
 
 # Get all combinations of 4 players on court (since Isabella and Adele are fixed)
@@ -76,7 +76,7 @@ ft <- tmp2 |>
   pull(Team) |> 
   unique()
 
-ft <- c("T17", "T34")
+ft <- c("T2", "T28", "T20", "T8")
 
 tmp2 |> 
   mutate(Team = factor(Team)) |>
@@ -121,10 +121,12 @@ tmp2 |>
 
 
 
-sql |> print(n= Inf)
+sql |> 
+  filter(Team %in% ft) |> 
+  print(n= Inf)
 
 sql |> 
-  filter(grepl("Celeste", Atlete)) |> 
+  filter(grepl("Fragonas", Atlete)) |> 
   filter(grepl("Panetto", Atlete)) |> 
   filter(grepl("Fragonas", Atlete)) |> 
   filter(grepl("Beretta", Atlete)) |> 
