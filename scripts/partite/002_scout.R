@@ -21,13 +21,13 @@ x <- dv_create(match = match,
 x$meta$teams <- teams
 
 ## Court ref
-refx <- ovideo::ov_shiny_court_ref(video_file = video_file, t = 1)
+refx <- ovideo::ov_shiny_court_ref(video_file = video_file, t = 50)
 saveRDS(refx, paste0(out, "/mrefx.RDS"))
 
 ## enter the team lineups for set 1
 x <- dv_set_lineups(x, set_number = 1, 
-                    lineups = list(c(15,13,12,6,8,7), 
-                                   c(22,35,10,39,41,2)), 
+                    lineups = list(c(8,3,18,10,5,2), 
+                                   c(17,15,8,7,4,11)), 
                     setter_positions = c(1, 1))
 
 # Subset the attacks
@@ -61,7 +61,7 @@ ov_scouter(dir_ls(out, regexp = "ovs$"),
 # Link Youtube video with scout
 dvw <- dir_ls(out, regexp = "dvw$")
 x <- dv_read(dvw)
-dv_meta_video(x) <- "https://youtu.be/mPh-7Rog6Q0"
+dv_meta_video(x) <- "https://youtu.be/m3XFedJlFsw"
 dv_write(x, dvw)
 file_copy(dir_ls(out, regexp = "dvw$"), here("partite", "all"), overwrite = TRUE)
 
