@@ -1,7 +1,7 @@
 ---
-title: "Foglio Gara: BCV Caluso - Alto Canavese"
-date: 12/09/2023
-categories: ['U12F', '2023-2024', 'Primo Campionato', 'Ritorno']
+title: "Foglio Gara: Allotreb - BCV Caluso"
+date: 06/04/2024
+categories: ['U12F', '2023-2024', 'Secondo Campionato', 'Ritorno']
 format:
   html:
     toc: false
@@ -25,7 +25,7 @@ library(volleyreport)
 library(epoxy)
 source(paste0(here::here(), "/scripts/999_utils.R"))
 # Read data
-file <- fs::dir_ls(paste0(here::here(), "/partite/2024-03-17_Sangone"), 
+file <- fs::dir_ls(paste0(here::here(), "/partite/2024-02-24_Allotreb"), 
                    regexp = "dvw$")
 x <- dv_read(file)
 noi <- "BCV Caluso"

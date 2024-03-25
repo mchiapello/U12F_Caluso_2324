@@ -48,9 +48,36 @@ px2 |>
                              filter(team != "BCV Caluso") |> 
                              select(time, team) |>
                              unique() |> 
-                             mutate(n = rep(c(-1, -3), 6)[1:11])) +
+                             mutate(n = rep(c(-1, -3.5, -6), 4))) +
 
   ggthemes::theme_few()
   
   
-  
+
+px3 <- px |> 
+  mutate(time = lubridate::ymd(str_sub(time, 1L, 10))) |> 
+  group_by(match_id, time) |> 
+  nest() |> 
+  arrange(time) |> 
+  mutate(Attack = map(data, \(x) x |> filter(skill == "Attack") |> count(team, skill_subtype, evaluation))) |> 
+  unnest(Attack) |> 
+  filter(team == "BCV Caluso") |> 
+         mutate(evaluation = case_when(evaluation == "Error" ~ "Error",
+                                       evaluation == "Winning attack" ~ "Point",
+                                       TRUE ~ "Other")) 
+
+px3 |> 
+  ggplot(aes(x = time,
+             y = n, color = evaluation)) +
+  geom_point(data = px3 |> 
+               filter(evaluation == "Point",
+                    skill_subtype == "Hard spike")) +
+  geom_line(data = px3 |> 
+              filter(evaluation == "Point",
+                     skill_subtype == "Hard spike")) +
+  geom_point(data = px3 |> 
+               filter(evaluation == "Error",
+                      skill_subtype == "Hard spike")) +
+  geom_line(data = px3 |> 
+              filter(evaluation == "Error",
+                     skill_subtype == "Hard spike"))
