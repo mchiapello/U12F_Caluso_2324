@@ -23,9 +23,11 @@ library(gtExtras)
 library(patchwork)
 library(volleyreport)
 library(epoxy)
+library(janitor)
+library(gtsummary)
 source(paste0(here::here(), "/scripts/999_utils.R"))
 # Read data
-file <- fs::dir_ls(paste0(here::here(), "/partite/2024-03-23_Fortitudo"), 
+file <- fs::dir_ls(paste0(here::here(), "/partite/2024-02-24_Allotreb"), 
                    regexp = "dvw$")
 x <- dv_read(file)
 noi <- "BCV Caluso"
@@ -250,10 +252,10 @@ p3 <- tmp3 |>
 p1 + p2 + p3
 ```
 
-
 ## Summary
 
 ### `r paste0("Team: ", noi)`
+
 ```{r}
 if(which(x$meta$team$team == noi) == 1){
   t1 <- x$meta$players_h %>% 
@@ -518,6 +520,7 @@ t1 %>%
 ```
 
 ### `r paste0("Team: ", loro)`
+
 ```{r}
 if(which(x$meta$team$team == loro) == 1){
   t1 <- x$meta$players_h %>% 
@@ -781,7 +784,6 @@ t1 %>%
 
 ```
 
-
 # Battuta
 
 ### Migliori battitori
@@ -816,52 +818,153 @@ pr <- vr_reception(plays(x), by = "player", team = loro, style = "default", refx
 Cerchiamo di battere su: {pr&}.
 ```
 
-### Battute
+### Direzioni di battuta
+
 ```{r}
-#| fig-width: 12
+#| fig-width: 15
 #| fig-asp: .6
 ################################################################################
 # Direzione battute
 flip <- plays(x) |> 
-  filter(team == noi,
+  filter(team == loro,
          # set_number == 1,
          skill == "Serve")
 
-# toflip <- which(flip$start_coordinate_y > 3.5)
-# 
-# flip[toflip, ] <- flip[toflip, ] %>%
-#   mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
-#          across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
+toflip <- which(flip$start_coordinate_y < 3.5)
+
+flip[toflip, ] <- flip[toflip, ] %>%
+  mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
+         across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
+flip |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20), show.legend = FALSE) +
+  ggcourt(labels = "", as_for_serve = TRUE, show_zones = FALSE) +
+  facet_grid(cols = vars(player_number)) +
+  ggtitle("Tutte")
+```
+
+```{r}
+#| fig-width: 15
+#| fig-asp: .6
 
 flip |> 
-  ggplot(aes(end_coordinate_x, end_coordinate_y)) +
-    geom_point(aes(color = evaluation)) +
-    ggcourt(labels = "")
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  filter(evaluation2 %in% c("Ace", "Positive")) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y, linetype = evaluation2)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20), show.legend = FALSE) +
+  scale_colour_manual(values = c(Ace = "darkgreen", Error = "firebrick", 
+                                 Positive = "lightgreen", Negative = "orange"),
+                      name = "Evaluation") +
+  ggcourt(labels = "", as_for_serve = TRUE, show_zones = FALSE) +
+  facet_grid(cols = vars(player_number),
+             rows = vars(evaluation2)) +
+  ggtitle("Solo positive e aces")
+
 
 ```
 
-### Freeballs
-```{r}
-#| fig-width: 12
-#| fig-asp: .6
-################################################################################
-# Direzione battute
-flip <- plays(x) |> 
-  filter(team == noi,
-         # set_number == 1,
-         skill == "Freeball")
+### Attacco Loro
 
-toflip <- which(flip$start_coordinate_y > 3.5)
+```{r}
+theme_gtsummary_compact()
+plays(x) |> 
+  filter(skill %in% c("Attack"),
+         team == loro) |> 
+  select(skill_subtype, evaluation) |> 
+  tbl_summary(by = c(evaluation), statistic = list(
+           all_continuous() ~ "{mean} ({sd})",
+           all_categorical() ~ "{n} / {N} ({p}%)"), 
+           label = skill_subtype ~ "Attack type") |> 
+  add_overall() |> 
+  modify_header(label ~ "**Variable**") |> 
+  # modify_spanning_header(c("stat_1", "stat_2") ~ "**Negative**") |> 
+  # modify_spanning_header(c("stat_3", "stat_4") ~ "**Positive**") |> 
+  bold_labels() |> 
+  as_gt() |> 
+  tab_header(
+    title = "Attachi Loro")
+```
+
+:::{.grid}
+
+:::{.g-col-6}
+```{r}
+theme_gtsummary_compact()
+plays(x) |> 
+  filter(skill %in% c("Freeball"),
+         team == loro) |> 
+  select(evaluation) |> 
+  tbl_summary(label = evaluation ~ "Freeball") |> 
+  modify_header(label ~ "**Variable**") |> 
+  bold_labels() |> 
+  as_gt() |> 
+  tab_header(
+    title = "Freeball")
+```
+:::
+
+:::{.g-col-6}
+```{r}
+flip <- plays(x) |> 
+  filter(team == loro,
+         # set_number == 1,
+         skill == "Attack")
+
+toflip <- which(flip$start_coordinate_y < 3.5)
 
 flip[toflip, ] <- flip[toflip, ] %>%
   mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
          across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
 
-  flip |> 
-  ggplot(aes(end_coordinate_x, end_coordinate_y)) +
-    geom_point(aes(color = evaluation)) +
-    ggcourt(labels = "")
+a1 <- flip |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+  ggcourt(labels = "", show_zones = FALSE) +
+  ggtitle("Attacks")
 
+flip <- plays(x) |> 
+  filter(team == loro,
+         # set_number == 1,
+         skill == "Freeball")
+
+toflip <- which(flip$start_coordinate_y < 3.5)
+
+flip[toflip, ] <- flip[toflip, ] %>%
+  mutate(across(all_of(c("start_coordinate_x", "end_coordinate_x")), dv_flip_x),
+         across(all_of(c("start_coordinate_y", "end_coordinate_y")), dv_flip_y))
+
+a2 <- flip |> 
+  mutate(evaluation2 = case_when(evaluation %in% c("OK, no first tempo possible",
+                                                   "Positive, no attack",
+                                                   "Positive, opponent some attack") ~ "Positive",
+                                 evaluation %in% c("Negative, opponent free attack") ~ "Negative",
+                                 TRUE ~ evaluation)) |> 
+  ggplot(aes(start_coordinate_x, start_coordinate_y,
+             xend = end_coordinate_x, yend = end_coordinate_y)) +
+  geom_segment(arrow = arrow(length = unit(2, "mm"), type = "closed", angle = 20)) +
+  ggcourt(labels = "", show_zones = FALSE) +
+  ggtitle("Freeballs") 
+
+a1+a2
 ```
 
+:::
+:::
 
