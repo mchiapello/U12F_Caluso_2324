@@ -1,0 +1,148 @@
+---
+title: "Progression"
+date: 01/20/2023
+categories: ['U12F', '2023-2024', 'Primo Campionato', 'Ritorno']
+format:
+  html:
+    toc: false
+    theme: journal
+    page-layout: article
+    number-sections: false
+  pdf: default
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+library(tidyverse)
+library(datavolley)
+library(gt)
+library(gtExtras)
+library(patchwork)
+library(volleyreport)
+source(paste0(here::here(), "/scripts/999_utils.R"))
+# Read data
+file <- fs::dir_ls(paste0(here::here(), "/partite/2024-03-23_Fortitudo"), 
+                   regexp = "dvw$")
+x <- dv_read(file)
+noi <- "BCV Caluso"
+loro <- teams(x)[teams(x) != noi]
+home <- teams(x)[1]
+away <- teams(x)[2]
+
+y <- plays(x)
+
+y2 <- y |> 
+  filter(!skill %in% c("Timeout", "Technical timeout")) |> 
+  filter(!grepl("set", code)) |> 
+  filter(!grepl("*z2", code)) |> 
+  group_by(point_id, set_number) |> 
+  nest() |> 
+  group_by(set_number) |> 
+  nest()
+
+
+## FUNCTION
+pippo <- function(x){
+  # Remove the not needed rows and cols
+  out1 <- x |> 
+    filter(!is.na(player_id)) |> 
+    select(team, code, skill, evaluation, video_time, phase, 
+           point_won_by, home_team_score, visiting_team_score,
+           home_score_start_of_point, visiting_score_start_of_point) |> 
+    mutate(code = str_remove(code, "~.*"),
+           score = paste0(home_team_score, " : ", visiting_team_score))
+  tt <- range(out1$video_time)[2] - range(out1$video_time)[1] 
+  # rename(!!home := home_team_score,
+  #        !!away := visiting_team_score)
+  
+  out2 <- tibble("Home" = NA,
+                 "Point" = NA,
+                 "Away" = NA)
+  
+  if(unique(out1$point_won_by) == home){
+    out2 <- out2 |> 
+      bind_rows(tibble(Home = paste0(out1$code, collapse = " - "),
+                       Point = paste0(unique(out1$score), "<br>(", tt, "s)"),
+                       Away = NA))
+  } else {
+    out2 <- out2 |>
+      bind_rows(tibble(Home = NA,
+                       Point = paste0(unique(out1$score), "<br>(", tt, "s)"),
+                       Away = paste0(out1$code, collapse = " - ")))
+  }
+}
+```
+
+Home team => `r teams(x)[1]`
+
+Away team => `r teams(x)[2]`
+
+```{r}
+################################################################################
+# SET 1
+tmp <- y2$data[[1]]
+tmp |>
+  mutate(test = map(data, pippo)) |>
+  unnest(test) |>
+  select(Home:Away) |>
+  filter(if_any(everything(), ~ !is.na(.))) |>
+  mutate(Home = ifelse(is.na(Home), "-", Home),
+         Away = ifelse(is.na(Away), "-", Away)) |>
+  gt(id = "set") |>
+  tab_style(style = cell_fill(color = "#4DD4DB"),
+            locations = cells_body(columns = "Home",
+                                   rows = Home != "-")) |>
+  tab_style(style = cell_fill(color = "#DBB04D"),
+            locations = cells_body(columns = "Away",
+                                   rows = Away != "-")) |>
+  # tab_options(table.width = px(650)) %>%
+  # cols_width(
+  #   Home ~ px(200),
+  #   Point ~ px(60),
+  #   Away ~ px(200)
+  # ) |>
+  fmt_markdown(columns = everything()) |>
+  cols_align(
+    align = "center",
+    columns = Point) |>
+  tab_header(
+    title = md("Set 1")) |>
+  opt_css(
+    css = "
+    #set .gt_row {
+      padding: 1px 1px;
+      font-size: 10px;
+    }
+    ")
+```
+
+## SET 1
+```{r}
+# ################################################################################
+# # SET 1
+# library(kableExtra)
+# 
+# tmp <- y2$data[[1]]
+# tmp <- tmp |> 
+#   mutate(test = map(data, pippo)) |> 
+#   unnest(test) |> 
+#   select(Home:Away) |> 
+#   filter(if_any(everything(), ~ !is.na(.))) |> 
+#   mutate(Home = ifelse(is.na(Home), "-", Home),
+#          Away = ifelse(is.na(Away), "-", Away)) 
+# 
+# tmp |> 
+#   kbl() |> 
+#   kable_styling(font_size = 7) |> 
+#   kable_paper(full_width = F) %>%
+#   column_spec(1, border_right = TRUE) %>%
+#   column_spec(2, width = "6em", border_right = TRUE) |> 
+#   column_spec(1, background = ifelse(tmp$Home != "-", "#4DD4DB", "white")) |> 
+#   column_spec(3, background = ifelse(tmp$Home == "-", "#DBB04D", "white")) 
+
+
+```
+

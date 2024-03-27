@@ -1,0 +1,23 @@
+---
+date: 03/21/2024
+categories: ['U12F', '2023-2024', 'In-season']
+params:
+  palestra: 'Arè'
+  date: '21/03/2024'
+  allenamento: '43'
+  assenti: ['Chimineti', 'Cireddu', 'Budau', 'Mauro']
+  vincitori: ['']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.8
+  voto: 0.8
+  url: NA
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Difesa
+{{< include ../../_contents/_allenamento.qmd >}}

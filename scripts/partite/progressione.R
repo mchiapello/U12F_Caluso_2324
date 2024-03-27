@@ -35,6 +35,7 @@ pippo <- function(x){
            home_score_start_of_point, visiting_score_start_of_point) |> 
     mutate(code = str_remove(code, "~.*"),
            score = paste0(home_team_score, " : ", visiting_team_score))
+  tt <- range(out1$video_time)[2] - range(out1$video_time)[1] 
   # rename(!!home := home_team_score,
   #        !!away := visiting_team_score)
   
@@ -45,12 +46,12 @@ pippo <- function(x){
   if(unique(out1$point_won_by) == home){
     out2 <- out2 |> 
       bind_rows(tibble(Home = paste0(out1$code, collapse = " - "),
-                       Point = paste0(unique(out1$score)),
+                       Point = paste0(unique(out1$score), "<br>(", tt, "s)"),
                        Away = NA))
   } else {
     out2 <- out2 |>
       bind_rows(tibble(Home = NA,
-                       Point = paste0(unique(out1$score)),
+                       Point = paste0(unique(out1$score), "<br>(", tt, "s)"),
                        Away = paste0(out1$code, collapse = " - ")))
   }
 }
@@ -78,6 +79,10 @@ tmp |>
     Point ~ px(80),
     Away ~ px(300)
   ) |> 
+  fmt_markdown(columns = TRUE) |> 
+  cols_align(
+    align = "center",
+    columns = Point) |> 
   tab_header(
     title = md("Set 1"))
 
@@ -104,11 +109,15 @@ tmp |>
     Point ~ px(80),
     Away ~ px(300)
   ) |> 
+  fmt_markdown(columns = TRUE) |> 
+  cols_align(
+    align = "center",
+    columns = Point) |> 
   tab_header(
     title = md("Set 2"))
 
 ################################################################################
-# SET 2
+# SET 3
 tmp <- y2$data[[3]]
 tmp |> 
   mutate(test = map(data, pippo)) |> 
@@ -130,5 +139,9 @@ tmp |>
     Point ~ px(80),
     Away ~ px(300)
   ) |> 
+  fmt_markdown(columns = TRUE) |> 
+  cols_align(
+    align = "center",
+    columns = Point) |> 
   tab_header(
     title = md("Set 3"))

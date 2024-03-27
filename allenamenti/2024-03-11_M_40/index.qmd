@@ -1,0 +1,23 @@
+---
+date: 03/11/2024
+categories: ['U12F', '2023-2024', 'In-season']
+params:
+  palestra: 'Arè'
+  date: '11/03/2024'
+  allenamento: '40'
+  assenti: ['Boni']
+  vincitori: ['']
+  impegno: 0.8
+  obiettivo: 0.8
+  allenatore: 0.8
+  miglioramenti: 0.8
+  voto: 0.8
+  url: NA
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Obiettivi: Fase cambio palla
+{{< include ../../_contents/_allenamento.qmd >}}
